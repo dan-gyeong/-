@@ -8,6 +8,8 @@
 from __future__ import annotations
 
 import calendar
+import json
+import os
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -19,8 +21,17 @@ from openpyxl.utils import get_column_letter
 # 설정값 (매달 이 블록만 수정해서 재사용)
 # =============================================================================
 
+# 작업 스케줄러 등으로 자동 실행할 때는 True로 두면 실행 시점 기준 "다음 달"
+# 근무표를 자동으로 생성한다. 특정 달을 지정해서 수동으로 돌리고 싶으면
+# False로 바꾸고 아래 YEAR/MONTH를 원하는 값으로 지정한다.
+AUTO_NEXT_MONTH = True
+
 YEAR = 2026
-MONTH = 10
+MONTH = 11
+
+if AUTO_NEXT_MONTH:
+    _today = date.today()
+    YEAR, MONTH = (_today.year + 1, 1) if _today.month == 12 else (_today.year, _today.month + 1)
 
 # 전체 상담사 명단 (1번/2번 좌석 배정 대상이 되는 전원)
 ALL_COUNSELORS = [
@@ -43,32 +54,25 @@ AD_HOC_LEAVE: dict[str, set[date]] = {
 }
 
 # 공휴일 / 특별일정 (해당 기간은 근무 배정에서 제외하고, 사유 문구를 표시)
+# 자동 실행(AUTO_NEXT_MONTH=True) 전에는 이번 달 것으로 반드시 업데이트할 것 —
+# 공휴일/행사일은 자동으로 알 수 없어 유일하게 매달 손으로 채워야 하는 항목이다.
 SPECIAL_SCHEDULES: list[dict] = [
-    {"start": date(2026, 10, 9), "end": date(2026, 10, 9), "label": "한글날"},
+    {"start": date(2026, 10, 9), "end": date(2026, 10, 9), "label": "한글날"},  # 예시 (10월)
 ]
 
-# 전월까지의 1번 좌석 누적 배정 횟수 (여러 달에 걸친 형평성까지 고려하고 싶을 때 입력)
-# 2026년 9월 근무표 생성 결과를 이어받아 형평성을 유지함
+# 전월까지의 1번 좌석 누적 배정 횟수 / 마지막 배정일을 여기 직접 채워도 되지만,
+# 보통은 비워 두면 된다 — 매달 실행이 끝날 때마다 STATE_FILE에 자동 저장되고,
+# 다음 실행 때 자동으로 이어받아 형평성을 유지한다. 여기 값을 채우면 그 값이
+# STATE_FILE의 값보다 우선한다(예: 담당자가 바뀌어 수동으로 다시 맞춰야 할 때).
 PREV_SEAT1_COUNTS: dict[str, int] = {
-    "김병성": 3,
-    "박민선": 3,
-    "김민성": 3,
-    "박미나": 3,
-    "이민정": 3,
-    "김윤정": 2,
-    "이영숙": 2,
+    # 예) "김병성": 3,
+}
+PREV_SEAT1_LAST_DATE: dict[str, date] = {
+    # 예) "김병성": date(2026, 9, 22),
 }
 
-# 전월까지 각 상담사가 마지막으로 1번 좌석에 배정되었던 날짜 (없으면 생략)
-PREV_SEAT1_LAST_DATE: dict[str, date] = {
-    "김병성": date(2026, 9, 22),
-    "박민선": date(2026, 9, 23),
-    "김민성": date(2026, 9, 28),
-    "박미나": date(2026, 9, 29),
-    "이민정": date(2026, 9, 30),
-    "김윤정": date(2026, 9, 18),
-    "이영숙": date(2026, 9, 21),
-}
+# 상담사별 1번 좌석 누적 배정 현황을 저장해 두는 파일 (자동 실행 시 형평성 이어받기용)
+STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schedule_state.json")
 
 OUTPUT_FILENAME = f"{YEAR}년_{MONTH}월_상담센터_근무표.xlsx"
 
@@ -92,6 +96,32 @@ class ScheduleResult:
     month: int
     days: dict[date, DaySchedule] = field(default_factory=dict)
     seat1_counts_this_month: dict[str, int] = field(default_factory=dict)
+    # 다음 달 실행 시 형평성을 이어가기 위한 누적치(전월 값 + 이번 달 결과)
+    seat1_counts_cumulative: dict[str, int] = field(default_factory=dict)
+    seat1_last_date: dict[str, date] = field(default_factory=dict)
+
+
+# =============================================================================
+# 누적 배정 현황 저장/불러오기 (자동 실행 시 형평성 이어받기)
+# =============================================================================
+
+def load_state(state_file: str) -> tuple[dict[str, int], dict[str, date]]:
+    if not os.path.exists(state_file):
+        return {}, {}
+    with open(state_file, encoding="utf-8") as f:
+        data = json.load(f)
+    counts = data.get("seat1_counts", {})
+    last_date = {c: date.fromisoformat(d) for c, d in data.get("seat1_last_date", {}).items()}
+    return counts, last_date
+
+
+def save_state(state_file: str, counts: dict[str, int], last_date: dict[str, date]) -> None:
+    data = {
+        "seat1_counts": counts,
+        "seat1_last_date": {c: d.isoformat() for c, d in last_date.items()},
+    }
+    with open(state_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 
 # =============================================================================
@@ -207,6 +237,8 @@ def generate_schedule(
         result.days[d] = DaySchedule(seat1=seat1_person, seat2=seat2_person)
 
     result.seat1_counts_this_month = seat1_counts_this_month
+    result.seat1_counts_cumulative = seat1_counts_cumulative
+    result.seat1_last_date = seat1_last_date
     return result
 
 
@@ -378,14 +410,18 @@ def export_to_excel(
 # =============================================================================
 
 def main() -> None:
+    saved_counts, saved_last_date = load_state(STATE_FILE)
+    prev_counts = {**saved_counts, **PREV_SEAT1_COUNTS}
+    prev_last_date = {**saved_last_date, **PREV_SEAT1_LAST_DATE}
+
     result = generate_schedule(
         year=YEAR,
         month=MONTH,
         all_counselors=ALL_COUNSELORS,
         seat1_excluded=SEAT1_EXCLUDED,
         special_schedules=SPECIAL_SCHEDULES,
-        prev_seat1_counts=PREV_SEAT1_COUNTS,
-        prev_seat1_last_date=PREV_SEAT1_LAST_DATE,
+        prev_seat1_counts=prev_counts,
+        prev_seat1_last_date=prev_last_date,
     )
 
     print(f"[{result.month}월 상담센터 근무 순서]\n")
@@ -398,8 +434,14 @@ def main() -> None:
             marker = " *" if s.seat1 else ""
             print(f"{d} ({weekday_label}): 1번={s.seat1}{marker} / 2번={s.seat2}")
 
-    validate_schedule(result, ALL_COUNSELORS, SEAT1_EXCLUDED, SPECIAL_SCHEDULES)
+    ok = validate_schedule(result, ALL_COUNSELORS, SEAT1_EXCLUDED, SPECIAL_SCHEDULES)
     export_to_excel(result, ALL_COUNSELORS, SEAT1_EXCLUDED, OUTPUT_FILENAME)
+
+    if ok:
+        save_state(STATE_FILE, result.seat1_counts_cumulative, result.seat1_last_date)
+        print(f"다음 달 형평성 이어받기용 상태 저장 완료: {STATE_FILE}")
+    else:
+        print("검증에 실패해 상태 파일은 갱신하지 않았습니다. 설정값을 확인해 주세요.")
 
 
 if __name__ == "__main__":
