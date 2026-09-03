@@ -137,6 +137,13 @@
   </div>
 
   <div id="matchContent">
+    <div class="panel" id="companySearchPanel">
+      <h2>기업명으로 빠른 검색</h2>
+      <p class="hint">내담자가 특정 기업을 이미 알고 있을 때, 매칭 절차 없이 바로 상세 정보를 확인할 수 있습니다.</p>
+      <input type="text" id="companySearchInput" placeholder="기업명을 입력하세요 (예: 대한노인회, 세스코)" style="width:100%;">
+      <div id="companySearchResults" style="margin-top:0.8em;"></div>
+    </div>
+
     <div class="panel" id="noSessionPanel">
       <p>새 내담자 상담을 시작하려면 아래 버튼을 누르세요. 세션번호가 자동으로 발급됩니다. 이름·연락처 등은 입력하지 않습니다.</p>
       <button class="primary" id="btnStartSession">상담 시작 (세션번호 발급)</button>
@@ -809,9 +816,22 @@ const WEIGHT_LABELS = {jobfit:'직무일치도', area:'근무지적합도', empl
 function categorizeSchedule(text){
   if(!text) return null;
   if(/교대|격일/.test(text)) return '교대·격일제';
+  if(/\d+\s*시간\s*이상/.test(text)) return '전일제';
   if(/주\s*5일/.test(text) && /\d{1,2}[:시]\d{0,2}\s*-\s*\d{1,2}[:시]/.test(text)) return '전일제';
-  if(/시간제|파트타임|일\s*\d+\s*~?\s*\d*\s*시간/.test(text)) return '시간제';
+  if(/시간제|파트타임|\d+\s*~\s*\d+\s*시간/.test(text)) return '시간제';
   return null;
+}
+
+/* 근무지가 "서울 전지역"/"수도권"/"재택근무"처럼 넓게 표기된 경우,
+   특정 자치구로 거는 필터에도 포함되는 것으로 취급한다(회사 정보를 새로 만드는 것이 아니라
+   문구 자체의 의미를 그대로 해석한 것). */
+function areaCoversFilter(jobArea, filterArea){
+  if(!filterArea) return true;
+  if(!jobArea) return false;
+  if(jobArea === filterArea) return true;
+  if(jobArea === '재택근무') return true;
+  if(jobArea === '서울 전지역' || jobArea.indexOf('수도권') >= 0) return true;
+  return false;
 }
 
 /* =========================================================
@@ -953,7 +973,7 @@ function computeResults(){
   const unmet = [];
 
   state.companies.forEach(job=>{
-    if(areaFilter && job.work_area !== areaFilter) return;
+    if(!areaCoversFilter(job.work_area, areaFilter)) return;
     if(empFilter && job.employment_type !== empFilter) return;
     const reasons = hardFilter(job, intake);
     if(reasons.length>0){ unmet.push({job, reasons}); return; }
@@ -1069,7 +1089,55 @@ function toggleCompanyStatus(jobId){
   job.status = (job.status==='당일마감') ? '모집중' : '당일마감';
   LS.set(K.companies, state.companies);
   renderStatusTable();
+  renderCompanySearch(document.getElementById('companySearchInput').value);
 }
+
+/* =========================================================
+   기업명 빠른 검색 (매칭 절차 없이 바로 상세정보 확인)
+   ========================================================= */
+function companyDetailCardHTML(job){
+  const isClosed = job.status === '당일마감';
+  return `
+    <div class="company-card">
+      <div class="booth">${job.booth_no || '정보없음'}</div>
+      <div class="company-name">${job.company || '정보없음'}</div>
+      <div class="job-title">${job.job_title || '정보없음'}</div>
+      <div class="meta-row">
+        <span>직무군: ${familyLabel(job.job_family) || '정보없음'}</span>
+        <span>채용인원: ${job.headcount || '정보없음'}</span>
+        <span>상태: <span class="badge ${isClosed ? 'badge-danger' : 'badge-ok'}">${job.status || '정보없음'}</span></span>
+      </div>
+      <div class="meta-row">
+        <span>근무지: ${job.work_area || '정보없음'}</span>
+        <span>고용형태: ${job.employment_type || '정보없음'}</span>
+        <span>근무형태: ${job.work_schedule || '정보없음'}</span>
+      </div>
+      <div class="meta-row">
+        <span>급여: ${job.pay_text || '정보없음'}</span>
+        <span>정년/연령 관련 문구: ${job.age_note || '정보없음'}</span>
+      </div>
+      <div class="meta-row">
+        <span>필수자격: ${job.required_license || '정보없음'}</span>
+        <span>우대자격: ${job.preferred_license || '정보없음'}</span>
+        <span>필수경력: ${job.required_exp_years ? job.required_exp_years + '년' : '정보없음'}</span>
+      </div>
+      ${job.etc_note ? '<div class="explain check"><ul><li>' + job.etc_note + '</li></ul></div>' : ''}
+      <button class="ghost toggleStatusBtnSearch" data-jobid="${job.job_id}">${isClosed ? '모집중으로 표시' : '당일마감으로 표시'}</button>
+    </div>
+  `;
+}
+function renderCompanySearch(query){
+  const wrap = document.getElementById('companySearchResults');
+  const q = (query || '').trim();
+  if(!q){ wrap.innerHTML = ''; return; }
+  const matches = state.companies.filter(c => (c.company || '').includes(q));
+  if(matches.length === 0){ wrap.innerHTML = '<p class="hint">일치하는 기업이 없습니다.</p>'; return; }
+  wrap.innerHTML = '<div class="card-grid">' + matches.map(companyDetailCardHTML).join('') + '</div>';
+  wrap.querySelectorAll('.toggleStatusBtnSearch').forEach(btn=>{
+    btn.addEventListener('click', e=>toggleCompanyStatus(e.target.dataset.jobid));
+  });
+}
+document.getElementById('companySearchInput').addEventListener('input', e=>renderCompanySearch(e.target.value));
 
 /* =========================================================
    세션 저장(비식별 상담요약 로그)
