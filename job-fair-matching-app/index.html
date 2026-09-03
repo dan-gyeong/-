@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>중장년 채용박람회 현장상담 매칭</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --border:#c9c9c2; --text:#1a1a1a; --muted:#5a5a54;
+    --accent:#0b5fa5; --accent-dark:#08466f; --ok:#1a7a3c; --ok-bg:#e6f4ea;
+    --warn:#8a5a00; --warn-bg:#fff3d6; --danger:#a3221f; --danger-bg:#fbe6e5;
+    --chip-bg:#eef0ee; --chip-sel:#0b5fa5;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",-apple-system,"Noto Sans KR",sans-serif;
+    font-size:16px; line-height:1.5;
+  }
+  h1,h2,h3{margin:0.3em 0;}
+  button{
+    font-family:inherit; font-size:1em; cursor:pointer; border-radius:8px;
+    border:2px solid var(--border); background:var(--panel); color:var(--text);
+    padding:0.5em 0.9em;
+  }
+  button:hover{border-color:var(--accent);}
+  button.primary{background:var(--accent); color:#fff; border-color:var(--accent-dark); font-weight:bold;}
+  button.primary:hover{background:var(--accent-dark);}
+  button.danger{background:var(--danger-bg); color:var(--danger); border-color:var(--danger);}
+  button.ghost{background:transparent;}
+  button:disabled{opacity:0.5; cursor:not-allowed;}
+  input[type=text], input[type=number], input[type=password], select, textarea{
+    font-family:inherit; font-size:1em; padding:0.45em 0.6em; border:2px solid var(--border);
+    border-radius:6px; background:#fff; color:var(--text);
+  }
+  textarea{width:100%; resize:vertical;}
+  label{cursor:pointer;}
+  .app-header{
+    position:sticky; top:0; z-index:50; background:var(--accent-dark); color:#fff;
+    padding:0.6em 1em; display:flex; align-items:center; gap:1em; flex-wrap:wrap;
+  }
+  .app-header h1{font-size:1.15em; margin:0; flex:1 1 auto;}
+  .device-badge{
+    background:#fff; color:var(--accent-dark); font-weight:bold; font-size:1.3em;
+    padding:0.15em 0.6em; border-radius:8px; letter-spacing:0.03em;
+  }
+  .tabs{display:flex; gap:0.4em; padding:0.6em 1em 0; background:var(--panel); border-bottom:2px solid var(--border); flex-wrap:wrap;}
+  .tab-btn{border-bottom:none; border-radius:8px 8px 0 0; background:var(--chip-bg);}
+  .tab-btn.active{background:var(--panel); border-color:var(--accent); border-bottom:2px solid var(--panel); margin-bottom:-2px; color:var(--accent-dark); font-weight:bold;}
+  .tab-panel{display:none; padding:1em; max-width:1200px; margin:0 auto;}
+  .tab-panel.active{display:block;}
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:1em; margin-bottom:1em;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:1em;}
+  @media (max-width:900px){ .grid2{grid-template-columns:1fr;} }
+  .field{margin-bottom:1em;}
+  .field > label.field-label{display:block; font-weight:bold; margin-bottom:0.4em;}
+  .chips{display:flex; flex-wrap:wrap; gap:0.4em;}
+  .chip{
+    border:2px solid var(--border); background:var(--chip-bg); border-radius:999px;
+    padding:0.35em 0.9em; cursor:pointer; user-select:none; font-size:0.98em;
+  }
+  .chip.selected{background:var(--chip-sel); color:#fff; border-color:var(--accent-dark); font-weight:bold;}
+  .chip .mark{margin-right:0.3em;}
+  .priority-row{display:flex; flex-wrap:wrap; gap:0.5em; align-items:center;}
+  .priority-item{
+    border:2px solid var(--border); border-radius:8px; padding:0.5em 0.8em; background:var(--chip-bg);
+    cursor:pointer; position:relative; min-width:6em; text-align:center;
+  }
+  .priority-item .rank-badge{
+    display:inline-block; background:var(--accent); color:#fff; border-radius:50%;
+    width:1.6em; height:1.6em; line-height:1.6em; text-align:center; margin-right:0.4em; font-weight:bold;
+  }
+  .priority-item.ranked{background:#e4f0fb; border-color:var(--accent);}
+  .warning-banner{background:var(--warn-bg); color:var(--warn); border:2px solid var(--warn); border-radius:8px; padding:0.6em 0.9em; margin-bottom:1em; font-weight:bold;}
+  .danger-banner{background:var(--danger-bg); color:var(--danger); border:2px solid var(--danger); border-radius:8px; padding:0.6em 0.9em; margin-bottom:1em; font-weight:bold;}
+  .info-banner{background:#eaf2fb; color:var(--accent-dark); border:2px solid var(--accent); border-radius:8px; padding:0.6em 0.9em; margin-bottom:1em;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:1em;}
+  .company-card{background:var(--panel); border:2px solid var(--border); border-radius:10px; padding:1em;}
+  .company-card.top{border-color:var(--accent);}
+  .company-card .booth{font-size:1.6em; font-weight:bold; color:var(--accent-dark);}
+  .company-card .company-name{font-size:1.25em; font-weight:bold;}
+  .company-card .job-title{font-size:1.1em; margin:0.2em 0;}
+  .company-card .score{font-size:1.3em; font-weight:bold; float:right; background:var(--ok-bg); color:var(--ok); border-radius:8px; padding:0.1em 0.5em;}
+  .meta-row{display:flex; flex-wrap:wrap; gap:0.6em; font-size:0.95em; color:var(--muted); margin:0.4em 0;}
+  .meta-row span{background:var(--chip-bg); border-radius:6px; padding:0.1em 0.5em;}
+  .explain ul{margin:0.3em 0; padding-left:1.3em;}
+  .explain .meet{color:var(--ok);}
+  .explain .check{color:var(--warn);}
+  .explain .questions{color:var(--accent-dark);}
+  table{border-collapse:collapse; width:100%; font-size:0.97em;}
+  table th, table td{border:1px solid var(--border); padding:0.4em 0.5em; text-align:left; vertical-align:top;}
+  table th{background:var(--chip-bg);}
+  .masked-cell{cursor:pointer; text-decoration:underline dotted;}
+  .badge{display:inline-block; border-radius:6px; padding:0.05em 0.5em; font-size:0.9em; font-weight:bold;}
+  .badge-ok{background:var(--ok-bg); color:var(--ok);}
+  .badge-warn{background:var(--warn-bg); color:var(--warn);}
+  .badge-danger{background:var(--danger-bg); color:var(--danger);}
+  .sliders label{display:flex; justify-content:space-between; font-size:0.95em;}
+  .sliders input[type=range]{width:100%;}
+  .flexrow{display:flex; gap:0.6em; flex-wrap:wrap; align-items:center;}
+  .lock-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:200;
+  }
+  .lock-box{background:#fff; border-radius:12px; padding:2em; max-width:480px; text-align:center;}
+  .device-btn-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:0.6em; margin:1em 0;}
+  .device-btn{padding:1em; font-size:1.2em; font-weight:bold;}
+  small.hint{color:var(--muted); display:block; margin-top:0.2em;}
+  #printSummary{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printSummary, #printSummary *{visibility:visible;}
+    #printSummary{display:block; position:absolute; top:0; left:0; width:100%; padding:1em;}
+  }
+  .footer-note{color:var(--muted); font-size:0.85em; margin-top:2em; text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>중장년 채용박람회 현장상담 매칭</h1>
+  <span id="deviceBadge" class="device-badge">기기코드 미설정</span>
+  <button id="btnResetSession" class="danger" title="비식별 상담 세션 데이터를 모두 지웁니다 (신청자 명부는 지워지지 않습니다)">세션 데이터 전체 삭제</button>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="match">상담 매칭</button>
+  <button class="tab-btn" data-tab="apply">간편 상담신청</button>
+  <button class="tab-btn" data-tab="admin">운영관리</button>
+</div>
+
+<!-- ============ 상담 매칭 탭 ============ -->
+<div class="tab-panel active" id="tab-match">
+
+  <div id="matchLocked" class="panel" style="display:none;">
+    <p>기기코드가 설정되지 않아 상담 화면을 사용할 수 없습니다. <strong>운영관리</strong> 탭에서 먼저 기기코드를 설정하세요.</p>
+  </div>
+
+  <div id="matchContent">
+    <div class="panel" id="noSessionPanel">
+      <p>새 내담자 상담을 시작하려면 아래 버튼을 누르세요. 세션번호가 자동으로 발급됩니다. 이름·연락처 등은 입력하지 않습니다.</p>
+      <button class="primary" id="btnStartSession">상담 시작 (세션번호 발급)</button>
+    </div>
+
+    <div id="sessionPanel" style="display:none;">
+      <div class="panel">
+        <div class="flexrow" style="justify-content:space-between;">
+          <div><strong>세션번호: <span id="curSessionId"></span></strong></div>
+          <button class="ghost" id="btnNewSession">새 상담 시작</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>1. 내담자 조건 입력</h2>
+        <div class="grid2">
+          <div class="field">
+            <label class="field-label">희망 근무지역 (다중선택)</label>
+            <div class="chips" id="chipsArea"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">통근 가능시간</label>
+            <div class="chips" id="chipsCommute"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">주된 경력 직무군 (최대 3개)</label>
+            <div class="chips" id="chipsJobFamily"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">총 경력연수</label>
+            <div class="chips" id="chipsExp"></div>
+          </div>
+          <div class="field" style="grid-column:1/-1;">
+            <label class="field-label">보유 자격·면허 (다중선택 + 기타 직접입력)</label>
+            <div class="chips" id="chipsLicense"></div>
+            <input type="text" id="licenseOther" placeholder="기타 자격(세미콜론 ; 으로 구분)" style="margin-top:0.5em; width:100%;">
+          </div>
+          <div class="field">
+            <label class="field-label">희망 고용형태</label>
+            <div class="chips" id="chipsEmployment"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">희망 근무형태</label>
+            <div class="chips" id="chipsSchedule"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">희망 월급 최저선</label>
+            <div class="chips" id="chipsPay"></div>
+          </div>
+          <div class="field">
+            <label class="field-label">신체활동 가능 강도</label>
+            <div class="chips" id="chipsPhysical"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">우선순위 지정 (클릭한 순서대로 1·2·3순위가 매겨집니다. 다시 누르면 취소됩니다)</label>
+          <div class="priority-row" id="priorityRow"></div>
+        </div>
+        <button class="primary" id="btnCompute">매칭 결과 보기</button>
+      </div>
+
+      <div id="resultsWrap" style="display:none;">
+        <div class="panel">
+          <h2>2. 결과 필터 및 가중치</h2>
+          <div class="grid2">
+            <div class="field">
+              <label class="field-label">지역 필터</label>
+              <select id="filterArea"><option value="">전체</option></select>
+            </div>
+            <div class="field">
+              <label class="field-label">고용형태 필터</label>
+              <select id="filterEmployment">
+                <option value="">전체</option>
+                <option>정규직</option><option>계약직</option><option>시간제</option>
+              </select>
+            </div>
+          </div>
+          <div class="field sliders" id="weightSliders"></div>
+        </div>
+
+        <div class="info-banner">모집상태는 현장 상황에 따라 바뀔 수 있습니다. 최종 모집 여부는 반드시 해당 부스에서 확인하세요.</div>
+
+        <div class="panel">
+          <h2>추천 기업 (상위 6개, 적합도 순)</h2>
+          <p class="hint">배부용 요약에 포함할 기업만 체크박스를 켜 두세요 (기본 6개 모두 선택됨, 3~6개로 조정 가능).</p>
+          <div class="card-grid" id="topCards"></div>
+        </div>
+
+        <div class="panel">
+          <h2>요건 미충족 (준비 필요) 목록</h2>
+          <p class="hint">필수 자격·경력이 부족하거나 당일마감된 곳입니다. 향후 준비 방향 상담에 참고하세요.</p>
+          <table id="unmetTable"><thead><tr><th>부스</th><th>기업명</th><th>직무명</th><th>부족 사유</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div class="panel">
+          <h2>부스 동선 안내</h2>
+          <div id="routeInfo"></div>
+        </div>
+
+        <div class="panel">
+          <h2>상담사 메모</h2>
+          <div class="warning-banner">이름·연락처·생년월일·상세주소 등 개인식별정보를 절대 입력하지 마세요.</div>
+          <textarea id="counselorMemo" rows="3" placeholder="상담 중 참고할 메모 (개인식별정보 제외)"></textarea>
+        </div>
+
+        <div class="panel flexrow">
+          <button class="primary" id="btnPrint">내담자 배부용 요약 인쇄</button>
+          <button id="btnGoApply">이 내담자 - 간편 상담신청 접수</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 간편 상담신청 탭 ============ -->
+<div class="tab-panel" id="tab-apply">
+  <div id="applyPinGate" class="panel">
+    <h2>명부 접근 - PIN 확인</h2>
+    <p>신청자 명부에는 개인식별정보가 포함되어 있어 4자리 PIN 확인 후 접근할 수 있습니다.</p>
+    <div class="warning-banner">로컬 저장은 암호화가 아닙니다. PIN은 어깨너머 노출 방지 수준의 조치이며, 실질적 보호는 노트북 계정 잠금·디스크 암호화에 의존합니다. (자세한 내용은 운영관리 탭 및 README 참고)</div>
+    <div id="pinSetupBox" style="display:none;">
+      <p>이 기기에 아직 PIN이 설정되지 않았습니다. 4자리 PIN을 설정하세요.</p>
+      <input type="password" id="pinNewInput" maxlength="4" placeholder="4자리 숫자">
+      <button class="primary" id="btnSetPin">PIN 설정</button>
+    </div>
+    <div id="pinEnterBox" style="display:none;">
+      <input type="password" id="pinEnterInput" maxlength="4" placeholder="PIN 입력">
+      <button class="primary" id="btnEnterPin">확인</button>
+    </div>
+  </div>
+
+  <div id="applyContent" style="display:none;">
+    <div class="panel">
+      <h2>동의 문구</h2>
+      <div id="consentBox" style="white-space:pre-wrap; border:1px solid var(--border); border-radius:8px; padding:0.8em; background:#fafaf7;"></div>
+      <div id="retentionBox" style="white-space:pre-wrap; margin-top:0.6em; font-size:0.95em; color:var(--muted);"></div>
+      <p><label><input type="checkbox" id="consentCheck"> 위 내용에 동의합니다 (필수)</label></p>
+      <p><label><input type="checkbox" id="paperConsentCheck"> 서면 동의서 원본을 별도로 수령했습니다</label></p>
+    </div>
+
+    <div class="panel">
+      <h2>신규 간편 상담신청 접수</h2>
+      <div class="grid2">
+        <div class="field"><label class="field-label">연결 세션번호</label>
+          <input type="text" id="applySessionId" placeholder="예: L1-0001 (해당 상담 세션이 있으면 자동 입력됨)"></div>
+        <div class="field"><label class="field-label">성명</label><input type="text" id="applyName"></div>
+        <div class="field"><label class="field-label">연락처(휴대전화)</label><input type="text" id="applyPhone" placeholder="010-0000-0000"></div>
+        <div class="field"><label class="field-label">거주 시군구</label><select id="applyRegion"></select></div>
+        <div class="field"><label class="field-label">희망 연락 시간대</label>
+          <div class="chips" id="chipsContactTime"></div>
+        </div>
+        <div class="field"><label class="field-label">희망 연락 요일 (다중선택)</label>
+          <div class="chips" id="chipsContactDay"></div>
+        </div>
+        <div class="field" style="grid-column:1/-1;"><label class="field-label">관심 직무군 (최대 3개)</label>
+          <div class="chips" id="chipsApplyFamily"></div>
+        </div>
+        <div class="field"><label class="field-label">신청 경로(부스/상담사 코드)</label>
+          <input type="text" id="applyChannel" placeholder="예: A-12 / L1"></div>
+      </div>
+      <div id="dupWarning" class="warning-banner" style="display:none;"></div>
+      <button class="primary" id="btnSaveApplicant" disabled>저장 (동의 체크 후 활성화)</button>
+    </div>
+
+    <div class="panel">
+      <h2>신청자 명부</h2>
+      <p class="hint">행을 클릭하면 마스킹이 해제됩니다(다시 클릭 시 재마스킹).</p>
+      <table id="applicantTable"><thead><tr>
+        <th>세션번호</th><th>성명</th><th>연락처</th><th>연락시간</th><th>거주지</th><th>관심직무군</th><th>배정 컨설턴트</th><th>배정상태</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="panel">
+      <h2>배정 현황 보드</h2>
+      <table id="assignBoard"><thead><tr><th>컨설턴트</th><th>배정건수</th><th>상태별 집계</th><th>1일 상한</th></tr></thead><tbody></tbody></table>
+      <p><strong>미배정 건수: </strong><span id="unassignedCount">0</span></p>
+    </div>
+
+    <div class="panel">
+      <h2>명부 내보내기 / 삭제</h2>
+      <div class="flexrow">
+        <button id="btnExportApplicants">신청자명부 CSV 내보내기</button>
+        <button class="danger" id="btnDeleteApplicants">명부 삭제</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 운영관리 탭 ============ -->
+<div class="tab-panel" id="tab-admin">
+
+  <div class="panel">
+    <h2>기기 코드</h2>
+    <p>현재 기기코드: <strong id="adminDeviceCode">미설정</strong></p>
+    <div class="device-btn-grid" id="deviceButtons"></div>
+    <button class="ghost" id="btnResetDevice">기기코드 초기화 (다시 설정)</button>
+  </div>
+
+  <div class="panel">
+    <h2>기업(직무) 데이터</h2>
+    <p>현재 <strong id="companyCount">0</strong>건 로드됨. 마지막 로드: <span id="companyLoadedAt">-</span></p>
+    <p class="hint">data/companies.csv 파일을 Excel 등으로 수정한 뒤, 아래 버튼으로 다시 불러오면 즉시 반영됩니다. (인터넷 연결 불필요)</p>
+    <input type="file" id="fileCompanies" accept=".csv">
+    <button id="btnLoadSampleCompanies" class="ghost">내장 샘플 데이터로 초기화</button>
+  </div>
+
+  <div class="panel">
+    <h2>기업 모집상태 관리</h2>
+    <p class="hint">부스에서 마감 소식을 전달받으면 아래 목록에서 해당 직무를 "당일마감"으로 표시하세요.</p>
+    <table id="statusTable"><thead><tr><th>부스</th><th>기업명</th><th>직무명</th><th>상태</th><th>전환</th></tr></thead><tbody></tbody></table>
+
+    <h3>마감정보 공유 (선택 - 확장모드)</h3>
+    <div class="info-banner">브라우저 보안 정책상 file:// 로 연 페이지는 공유폴더를 자동으로 주기 감시하지 못합니다. 그래서 아래처럼 "내보내기 파일을 만들고 → 다른 기기에서 파일을 선택해 불러오는" 수동 방식으로 구현했습니다.</div>
+    <div class="flexrow">
+      <div>
+        <p><strong>운영석(D1) 전용:</strong> 현재 모집상태를 파일로 내보내 공유폴더/USB에 둡니다.</p>
+        <button id="btnExportStatus">마감정보 내보내기 (status.csv)</button>
+      </div>
+      <div>
+        <p><strong>상담용 기기:</strong> 운영석이 만든 status.csv를 선택해 불러옵니다.</p>
+        <input type="file" id="fileStatus" accept=".csv">
+      </div>
+    </div>
+    <p>마지막 마감정보 반영 시각: <span id="statusUpdatedAt">불러온 적 없음</span> <span id="statusStaleWarn" class="badge badge-warn" style="display:none;">⚠ 30분 이상 갱신되지 않음 - 최신 상태 아닐 수 있음</span></p>
+  </div>
+
+  <div class="panel">
+    <h2>컨설턴트 명단</h2>
+    <input type="file" id="fileConsultants" accept=".csv">
+    <table id="consultantTable"><thead><tr><th>성명</th><th>전문 직무군</th><th>담당 지역</th><th>1일 배정 상한</th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="panel">
+    <h2>동의 문구 파일 (data/consent.txt)</h2>
+    <input type="file" id="fileConsent" accept=".txt">
+    <p class="hint">현재 상태: <span id="consentStatus"></span></p>
+  </div>
+
+  <div class="panel">
+    <h2>배부용 요약 표시 옵션</h2>
+    <div class="field"><label class="field-label">행사명 (선택, 배부용 요약 상단에 표시)</label>
+      <input type="text" id="eventName" style="width:100%;"></div>
+  </div>
+
+  <div class="panel">
+    <h2>상담요약 CSV 내보내기</h2>
+    <p>저장된 상담 세션: <strong id="sessionCount">0</strong>건 (식별정보 없음)</p>
+    <button id="btnExportSessions">상담요약 CSV 내보내기</button>
+  </div>
+
+  <div class="panel">
+    <h2>행사 종료 후 절차 요약</h2>
+    <ol>
+      <li>이 기기에서 상담요약 CSV, 신청자명부 CSV를 각각 내보냅니다.</li>
+      <li>기관이 지정한 위치(USB/공유폴더)로 옮깁니다.</li>
+      <li>8대 전부에서 위 절차를 반복합니다.</li>
+      <li>내보내기를 확인한 뒤, 이 화면 상단의 "세션 데이터 전체 삭제"와 간편 상담신청 탭의 "명부 삭제"를 각 기기에서 실행합니다.</li>
+      <li>기기별 삭제 확인 체크리스트를 작성합니다 (README 참고).</li>
+    </ol>
+  </div>
+</div>
+
+<div id="printSummary"></div>
+
+<div class="footer-note">본 앱은 인터넷에 연결되지 않고 이 브라우저 안에서만 동작합니다. 데이터는 외부로 전송되지 않습니다.</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   상수 정의
+   ========================================================= */
+const SEOUL_GU = ['종로구','중구','용산구','성동구','광진구','동대문구','중랑구','성북구','강북구','도봉구',
+  '노원구','은평구','서대문구','마포구','양천구','강서구','구로구','금천구','영등포구','동작구',
+  '관악구','서초구','강남구','송파구','강동구'];
+
+const JOB_FAMILIES = [
+  {code:'FAC', label:'시설·경비'}, {code:'PRD', label:'생산·제조'}, {code:'ADM', label:'사무·행정'},
+  {code:'SAL', label:'판매·서비스'}, {code:'DRV', label:'운전·배송'}, {code:'CARE', label:'사회복지·돌봄'},
+  {code:'TEC', label:'IT·기술'}, {code:'ETC', label:'기타'}
+];
+function familyLabel(code){ const f=JOB_FAMILIES.find(x=>x.code===code); return f? f.label : code; }
+
+const LICENSE_OPTIONS = ['아이돌봄 국가자격증','요양보호사','전기기능사','지게차운전기능사','운전면허1종',
+  '운전면허2종','컴퓨터활용능력2급','조리기능사','정보처리기사','소방안전관리자2급','경비지도사'];
+
+const EXP_BRACKETS = [
+  {id:'none', label:'경력 없음', years:0}, {id:'u1', label:'1년 미만', years:0.5},
+  {id:'1to3', label:'1~3년', years:2}, {id:'3to5', label:'3~5년', years:4},
+  {id:'5to10', label:'5~10년', years:7}, {id:'over10', label:'10년 이상', years:10}
+];
+
+const PAY_BRACKETS = [
+  {id:'any', label:'무관', min:0}, {id:'150', label:'150만원 이상', min:1500000},
+  {id:'180', label:'180만원 이상', min:1800000}, {id:'200', label:'200만원 이상', min:2000000},
+  {id:'220', label:'220만원 이상', min:2200000}, {id:'250', label:'250만원 이상', min:2500000},
+  {id:'300', label:'300만원 이상', min:3000000}
+];
+
+const PRIORITY_ITEMS = [
+  {code:'pay', label:'급여'}, {code:'area', label:'근무지'}, {code:'schedule', label:'근무시간'},
+  {code:'employment', label:'고용안정'}, {code:'jobfit', label:'직무적합'}
+];
+
+const DEVICE_CODES = ['L1','L2','L3','L4','L5','L6','D1','D2'];
+const COMPANY_HEADERS = ['job_id','booth_no','company','industry','job_title','job_family','headcount',
+  'work_area','employment_type','work_schedule','pay_text','pay_monthly_min','required_license',
+  'preferred_license','required_exp_years','physical_load','age_note','etc_note','status'];
+
+/* 내장 샘플(실데이터) - data/companies.csv 와 동일 내용. 파일 로드 전 기본값으로 사용 */
+const BUILTIN_COMPANIES_CSV = `job_id,booth_no,company,industry,job_title,job_family,headcount,work_area,employment_type,work_schedule,pay_text,pay_monthly_min,required_license,preferred_license,required_exp_years,physical_load,age_note,etc_note,status
+TBD-1-1,TBD-1,한국공간솔루션 유한회사,,시설관리자원,FAC,1,서울 전지역,,주5일 09:30-18:00,220만원,,,자격증 무관,,,없음,[확인필요] 직무명 원문 표기 확인 필요(시설관리자원/시설관리요원 등),모집중
+TBD-2-1,TBD-2,(주)한국 교리츠 메인터넌스,,,,1,,,주5일(2교대) 08:30-17:30,220~250만원,,,,,,만 65세,[확인필요] 원문 이미지 판독 불가로 직무명·근무지·자격사항 비워둠. 원본 파일 재확인 필요,모집중
+TBD-3-1,TBD-3,한국디지털문해교육협회,,스마트폰강사,ETC,1,"서울, 경기",,협의근무,3~4만원,,,강사경력 우대,,,만 65세,[확인필요] 급여 단위(시급/회당 등) 원문 불명확,모집중
+TBD-3-2,TBD-3,한국디지털문해교육협회,,스마트폰생활교육강사,ETC,1,"서울, 경기",,협의근무,3~4만원,,,강사경력 우대,,,만 65세,[확인필요] 급여 단위(시급/회당 등) 원문 불명확,모집중
+TBD-3-3,TBD-3,한국디지털문해교육협회,,정보화강사,ETC,1,"서울, 경기",,협의근무,3~4만원,,,강사경력 우대,,,만 65세,[확인필요] 급여 단위(시급/회당 등) 원문 불명확,모집중
+TBD-4-1,TBD-4,한국앙코르커리어,,직무상담원,ETC,1,전국,,협의근무,기본급 협의,,,,,,없음,[확인필요] 원문 표기 "협무상담원"으로 보여 직무명 재확인 필요,모집중
+TBD-4-2,TBD-4,한국앙코르커리어,,직업컨설턴트,ETC,1,전국,,협의근무,기본급 협의,,,,,,없음,원문에 세 번째 직무(인생 재교육 관련 추정)가 있었으나 판독 불가하여 미포함. 확인 필요,모집중
+TBD-5-1,TBD-5,한국위드케어협회,,수도권생활관리사,CARE,1,서울 전지역,,일 4~8시간,없음,,,,,,없음,[확인필요] 급여 "없음"으로 원문 표기됨 - 무급/실비 여부 부스에서 확인 필요. 직무명 표기도 재확인 필요,모집중
+TBD-6-1,TBD-6,현대홈쇼핑,,,,1,인천,,"일 8시간, 주5일 09:00-18:00",230만원~,,,,,,없음,[확인필요] 원문 이미지 판독 불가로 직무명·자격사항 비워둠(원문 "송무"로 보이나 확실치 않음). 원본 파일 재확인 필요,모집중
+TBD-7-1,TBD-7,호텔인네트워크,,,,1,서울 서초구,,"일 2~3시간, 일요일 격주근무(시간 협의)",협의,,,,,,없음,[확인필요] 원문 이미지 판독 불가로 직무명·자격사항 비워둠(연회·조리 관련 추정). 원본 파일 재확인 필요,모집중
+TBD-8-1,TBD-8,노원구 가족센터,,아이돌봄사,CARE,3,서울 노원구,,협의근무,"시급 11,000원",,아이돌봄 국가자격증,,,,없음,노원구 관할지역 거주자 대상,모집중
+TBD-9-1,TBD-9,성북구 가족센터,,생활지원사,CARE,3,서울 성북구,,협의근무,"시급 10,000원선",,아이돌봄 국가자격증,,,,없음,[확인필요] 성북구 거주자 우대. 직무명 "생활지원사"가 아이돌봄 업무와 동일한 역할로 보여 확인 필요,모집중
+TBD-10-1,TBD-10,종로구 가족센터,,아이돌봄사,CARE,1,서울 종로구,,협의근무,"시급 10,000원선",,아이돌봄 국가자격증,,,,없음,종로구 거주자 우대,모집중
+TBD-11-1,TBD-11,중랑구 아이돌봄지원센터,,아이돌봄사,CARE,1,서울 중랑구,,,"시급 10,000원선",,아이돌봄 국가자격증,,,,없음,중랑구 거주자 우대. 원문에 근무시간 항목 자체가 없어 비워둠,모집중
+`;
+
+const BUILTIN_CONSULTANTS_CSV = `성명,전문 직무군,담당 지역,1일 배정 상한
+컨설턴트1,전체,전체,5
+컨설턴트2,전체,전체,5
+컨설턴트3,전체,전체,5
+컨설턴트4,전체,전체,5
+`;
+
+const BUILTIN_CONSENT = {
+  consent: "[기관 동의문구 입력 필요]\n아직 기관에서 확정한 개인정보 수집·이용 동의 문구가 입력되지 않았습니다.\n운영관리 탭에서 data/consent.txt 파일을 불러와 반영하세요.",
+  retention: "[보유기간·파기시점 입력 필요]\n기관이 정한 보유기간·파기시점을 data/consent.txt 파일에 입력한 뒤 불러오세요."
+};
+
+/* =========================================================
+   저장소 유틸
+   ========================================================= */
+const LS = {
+  get(key, fallback){ try{ const v = localStorage.getItem(key); return v===null? fallback : JSON.parse(v);}catch(e){ return fallback; } },
+  set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){ console.error(e); } }
+};
+const K = {
+  device:'jfm_device', seq:'jfm_seq', companies:'jfm_companies', companiesLoadedAt:'jfm_companiesLoadedAt',
+  consultants:'jfm_consultants', consentText:'jfm_consentText', sessions:'jfm_sessions', applicants:'jfm_applicants',
+  statusUpdatedAt:'jfm_statusUpdatedAt', pin:'jfm_pin', eventName:'jfm_eventName'
+};
+
+/* =========================================================
+   CSV 유틸 (따옴표/쉼표 처리)
+   ========================================================= */
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  text = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c==='"'){
+        if(text[i+1]==='"'){ field+='"'; i++; } else { inQuotes=false; }
+      } else { field += c; }
+    } else {
+      if(c==='"'){ inQuotes = true; }
+      else if(c===','){ row.push(field); field=''; }
+      else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else { field += c; }
+    }
+  }
+  if(field.length>0 || row.length>0){ row.push(field); rows.push(row); }
+  return rows.filter(r => !(r.length===1 && r[0]===''));
+}
+function csvRowsToObjects(text){
+  const rows = parseCSV(text);
+  if(rows.length===0) return [];
+  const headers = rows[0].map(h=>h.trim());
+  return rows.slice(1).map(r=>{
+    const obj = {};
+    headers.forEach((h,i)=>{ obj[h] = (r[i]!==undefined? r[i] : '').trim(); });
+    return obj;
+  });
+}
+function csvField(v){
+  v = (v===undefined || v===null) ? '' : String(v);
+  if(/[",\n]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+  return v;
+}
+function objectsToCSV(headers, objs){
+  const lines = [headers.join(',')];
+  objs.forEach(o=>{ lines.push(headers.map(h=>csvField(o[h])).join(',')); });
+  return lines.join('\n');
+}
+function downloadText(filename, text, mime){
+  const blob = new Blob(['﻿'+text], {type: mime || 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 3000);
+}
+function pad4(n){ return String(n).padStart(4,'0'); }
+function splitSemi(v){ return (v||'').split(';').map(s=>s.trim()).filter(Boolean); }
+function nowStamp(){ const d=new Date(); return d.toISOString().slice(0,19).replace('T',' '); }
+function todayStr(){ const d=new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; }
+
+/* =========================================================
+   상태
+   ========================================================= */
+const state = {
+  device: LS.get(K.device, null),
+  companies: LS.get(K.companies, null),
+  companiesLoadedAt: LS.get(K.companiesLoadedAt, null),
+  consultants: LS.get(K.consultants, null),
+  consentText: LS.get(K.consentText, null),
+  sessions: LS.get(K.sessions, []),
+  applicants: LS.get(K.applicants, []),
+  statusUpdatedAt: LS.get(K.statusUpdatedAt, null),
+  pin: LS.get(K.pin, null),
+  eventName: LS.get(K.eventName, ''),
+  pinUnlocked: false,
+  curSession: null /* {id, intake:{...}, priorityRank:[], weights:{...}, results:{...}, includeSet:Set, memo} */
+};
+if(!state.companies){ state.companies = csvRowsToObjects(BUILTIN_COMPANIES_CSV); LS.set(K.companies, state.companies); }
+if(!state.consultants){ state.consultants = csvRowsToObjects(BUILTIN_CONSULTANTS_CSV); LS.set(K.consultants, state.consultants); }
+if(!state.consentText){ state.consentText = BUILTIN_CONSENT; LS.set(K.consentText, state.consentText); }
+
+/* =========================================================
+   탭 전환
+   ========================================================= */
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab-btn'); if(!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+});
+
+/* =========================================================
+   기기 코드
+   ========================================================= */
+function renderDeviceUI(){
+  const badge = document.getElementById('deviceBadge');
+  const adminLabel = document.getElementById('adminDeviceCode');
+  if(state.device){
+    badge.textContent = '기기: ' + state.device.code;
+    adminLabel.textContent = state.device.code + ' (설정일시: ' + state.device.setAt + ')';
+  } else {
+    badge.textContent = '기기코드 미설정';
+    adminLabel.textContent = '미설정';
+  }
+  document.getElementById('matchLocked').style.display = state.device ? 'none' : 'block';
+  document.getElementById('matchContent').style.display = state.device ? 'block' : 'none';
+}
+function buildDeviceButtons(){
+  const wrap = document.getElementById('deviceButtons');
+  wrap.innerHTML = '';
+  DEVICE_CODES.forEach(code=>{
+    const b = document.createElement('button');
+    b.className = 'device-btn'; b.textContent = code;
+    b.addEventListener('click', ()=>{
+      state.device = {code, setAt: nowStamp()};
+      LS.set(K.device, state.device);
+      if(LS.get(K.seq+'_'+code, undefined) === undefined) LS.set(K.seq+'_'+code, 0);
+      renderDeviceUI(); renderStatusTable();
+    });
+    wrap.appendChild(b);
+  });
+}
+document.getElementById('btnResetDevice').addEventListener('click', ()=>{
+  if(!confirm('기기코드를 초기화하시겠습니까? 상담 화면이 다시 잠깁니다.')) return;
+  state.device = null; LS.set(K.device, null); renderDeviceUI();
+});
+
+/* =========================================================
+   세션번호 발급
+   ========================================================= */
+function nextSessionId(){
+  const code = state.device.code;
+  const key = K.seq+'_'+code;
+  let n = LS.get(key, 0) + 1;
+  LS.set(key, n);
+  return code + '-' + pad4(n);
+}
+
+/* =========================================================
+   칩(다중/단일 선택) 렌더 헬퍼
+   ========================================================= */
+function renderChips(containerId, items, opts){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  items.forEach(item=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = item.label;
+    chip.dataset.value = item.value;
+    el.appendChild(chip);
+    chip.addEventListener('click', ()=>{
+      if(opts.multi){
+        const sel = opts.getSelected();
+        const idx = sel.indexOf(item.value);
+        if(idx>=0){ sel.splice(idx,1); }
+        else {
+          if(opts.max && sel.length>=opts.max){ alert('최대 '+opts.max+'개까지 선택할 수 있습니다.'); return; }
+          sel.push(item.value);
+        }
+        opts.setSelected(sel);
+      } else {
+        opts.setSelected(item.value);
+      }
+      refreshChipStyles(containerId, opts);
+      if(opts.onChange) opts.onChange();
+    });
+  });
+  refreshChipStyles(containerId, opts);
+}
+function refreshChipStyles(containerId, opts){
+  const el = document.getElementById(containerId);
+  const sel = opts.multi ? opts.getSelected() : [opts.getSelected()];
+  el.querySelectorAll('.chip').forEach(chip=>{
+    chip.classList.toggle('selected', sel.includes(chip.dataset.value));
+  });
+}
+
+/* =========================================================
+   내담자 인테이크 상태
+   ========================================================= */
+function blankIntake(){
+  return {
+    areas: [], commute: '무관', jobFamilies: [], exp: 'none', licenses: [], licenseOther: '',
+    employmentType: '무관', workSchedule: '무관', pay: 'any', physical: '중', priorityRank: []
+  };
+}
+
+function setupIntakeUI(){
+  const intake = state.curSession.intake;
+
+  renderChips('chipsArea', SEOUL_GU.map(g=>({label:g, value:'서울 '+g})), {
+    multi:true, getSelected:()=>intake.areas, setSelected:(v)=>{intake.areas=v;}
+  });
+  renderChips('chipsCommute', ['30분 이내','1시간 이내','무관'].map(v=>({label:v,value:v})), {
+    multi:false, getSelected:()=>intake.commute, setSelected:(v)=>{intake.commute=v;}
+  });
+  renderChips('chipsJobFamily', JOB_FAMILIES.map(f=>({label:f.label, value:f.code})), {
+    multi:true, max:3, getSelected:()=>intake.jobFamilies, setSelected:(v)=>{intake.jobFamilies=v;}
+  });
+  renderChips('chipsExp', EXP_BRACKETS.map(b=>({label:b.label, value:b.id})), {
+    multi:false, getSelected:()=>intake.exp, setSelected:(v)=>{intake.exp=v;}
+  });
+  renderChips('chipsLicense', LICENSE_OPTIONS.map(l=>({label:l, value:l})), {
+    multi:true, getSelected:()=>intake.licenses, setSelected:(v)=>{intake.licenses=v;}
+  });
+  document.getElementById('licenseOther').value = intake.licenseOther;
+  document.getElementById('licenseOther').addEventListener('input', e=>{ intake.licenseOther = e.target.value; });
+
+  renderChips('chipsEmployment', ['정규직','계약직','시간제','무관'].map(v=>({label:v,value:v})), {
+    multi:false, getSelected:()=>intake.employmentType, setSelected:(v)=>{intake.employmentType=v;}
+  });
+  renderChips('chipsSchedule', ['전일제','시간제','교대·격일제','무관'].map(v=>({label:v,value:v})), {
+    multi:false, getSelected:()=>intake.workSchedule, setSelected:(v)=>{intake.workSchedule=v;}
+  });
+  renderChips('chipsPay', PAY_BRACKETS.map(b=>({label:b.label, value:b.id})), {
+    multi:false, getSelected:()=>intake.pay, setSelected:(v)=>{intake.pay=v;}
+  });
+  renderChips('chipsPhysical', ['상','중','하'].map(v=>({label:v,value:v})), {
+    multi:false, getSelected:()=>intake.physical, setSelected:(v)=>{intake.physical=v;}
+  });
+
+  buildPriorityUI();
+}
+
+function buildPriorityUI(){
+  const wrap = document.getElementById('priorityRow');
+  wrap.innerHTML = '';
+  const intake = state.curSession.intake;
+  PRIORITY_ITEMS.forEach(item=>{
+    const box = document.createElement('div');
+    box.className = 'priority-item';
+    box.dataset.code = item.code;
+    wrap.appendChild(box);
+    box.addEventListener('click', ()=>{
+      const rank = intake.priorityRank;
+      const idx = rank.indexOf(item.code);
+      if(idx>=0){ rank.splice(idx,1); }
+      else { if(rank.length>=3){ alert('우선순위는 최대 3개까지 지정할 수 있습니다. 다른 항목을 먼저 해제하세요.'); return; } rank.push(item.code); }
+      renderPriorityUI();
+    });
+  });
+  renderPriorityUI();
+}
+function renderPriorityUI(){
+  const intake = state.curSession.intake;
+  document.querySelectorAll('#priorityRow .priority-item').forEach(box=>{
+    const code = box.dataset.code;
+    const idx = intake.priorityRank.indexOf(code);
+    const label = PRIORITY_ITEMS.find(p=>p.code===code).label;
+    if(idx>=0){
+      box.classList.add('ranked');
+      box.innerHTML = '<span class="rank-badge">'+(idx+1)+'</span>'+label;
+    } else {
+      box.classList.remove('ranked');
+      box.innerHTML = label;
+    }
+  });
+}
+
+/* =========================================================
+   가중치 계산
+   ========================================================= */
+function computeWeights(rank){
+  const w = {prefLicense:8, physical:8};
+  const rankWeight = [30,22,16];
+  const all = ['pay','area','schedule','employment','jobfit'];
+  const assigned = {};
+  rank.forEach((code,i)=>{ w[code] = rankWeight[i]; assigned[code]=true; });
+  all.forEach(code=>{ if(!assigned[code]) w[code] = 8; });
+  return w;
+}
+const WEIGHT_LABELS = {jobfit:'직무일치도', area:'근무지적합도', employment:'고용형태일치', schedule:'근무형태일치',
+  pay:'급여조건충족', prefLicense:'우대자격보유', physical:'신체강도적합'};
+
+/* =========================================================
+   근무형태 텍스트 -> 카테고리 추정 (매칭 참고용, 회사정보를 만들어내지 않음)
+   ========================================================= */
+function categorizeSchedule(text){
+  if(!text) return null;
+  if(/교대|격일/.test(text)) return '교대·격일제';
+  if(/주\s*5일/.test(text) && /\d{1,2}[:시]\d{0,2}\s*-\s*\d{1,2}[:시]/.test(text)) return '전일제';
+  if(/시간제|파트타임|일\s*\d+\s*~?\s*\d*\s*시간/.test(text)) return '시간제';
+  return null;
+}
+
+/* =========================================================
+   하드 필터 + 점수 계산
+   ========================================================= */
+function expYearsFromBracket(id){ const b=EXP_BRACKETS.find(x=>x.id===id); return b? b.years : 0; }
+function payMinFromBracket(id){ const b=PAY_BRACKETS.find(x=>x.id===id); return b? b.min : 0; }
+function allLicenses(intake){
+  return intake.licenses.concat(splitSemi(intake.licenseOther));
+}
+
+function hardFilter(job, intake){
+  const reasons = [];
+  const required = splitSemi(job.required_license);
+  if(required.length>0){
+    const held = allLicenses(intake);
+    const missing = required.filter(l=>!held.includes(l));
+    if(missing.length>0) reasons.push('필수자격 미보유: ' + missing.join(', '));
+  }
+  const reqYears = parseFloat(job.required_exp_years);
+  if(!isNaN(reqYears) && reqYears>0){
+    const have = expYearsFromBracket(intake.exp);
+    if(have < reqYears) reasons.push('필수경력 ' + reqYears + '년 중 보유 ' + have + '년');
+  }
+  if(job.status === '당일마감') reasons.push('당일마감');
+  return reasons;
+}
+
+function scoreJob(job, intake, weights){
+  const dims = {};
+
+  if(job.job_family){
+    dims.jobfit = {applicable:true, subscore: intake.jobFamilies.includes(job.job_family)?100:0};
+  } else dims.jobfit = {applicable:false};
+
+  if(job.work_area){
+    if(intake.areas.includes(job.work_area)) dims.area = {applicable:true, subscore:100};
+    else if(intake.commute==='무관') dims.area = {applicable:true, subscore:50, needCheck:true};
+    else dims.area = {applicable:true, subscore:0};
+  } else dims.area = {applicable:false};
+
+  if(job.employment_type){
+    dims.employment = {applicable:true, subscore: (intake.employmentType==='무관' || job.employment_type===intake.employmentType) ? 100 : 0};
+  } else dims.employment = {applicable:false};
+
+  const cat = categorizeSchedule(job.work_schedule);
+  if(job.work_schedule && cat){
+    dims.schedule = {applicable:true, subscore: (intake.workSchedule==='무관' || cat===intake.workSchedule) ? 100 : 0, cat};
+  } else dims.schedule = {applicable:false};
+
+  const payMin = parseFloat(job.pay_monthly_min);
+  if(!isNaN(payMin) && payMin>0){
+    const needMin = payMinFromBracket(intake.pay);
+    dims.pay = {applicable:true, subscore: (needMin<=0 || payMin>=needMin) ? 100 : 0};
+  } else dims.pay = {applicable:false};
+
+  const prefList = splitSemi(job.preferred_license);
+  const held = allLicenses(intake);
+  const hasPref = prefList.some(l=>held.includes(l));
+  dims.prefLicense = {applicable:true, subscore: prefList.length>0 ? (hasPref?100:0) : 0};
+
+  if(job.physical_load){
+    const order = {'하':1,'중':2,'상':3};
+    const jl = order[job.physical_load], cl = order[intake.physical];
+    let sub = 100;
+    if(jl!==undefined && cl!==undefined && jl>cl){ sub = (jl-cl===1) ? 40 : 0; }
+    dims.physical = {applicable:true, subscore: sub};
+  } else dims.physical = {applicable:false};
+
+  let totalW=0, sum=0;
+  Object.keys(dims).forEach(k=>{
+    if(dims[k].applicable){ totalW += weights[k]; sum += dims[k].subscore * weights[k]; }
+  });
+  const finalScore = totalW>0 ? Math.round(sum/totalW) : 50;
+  return {dims, finalScore, totalW};
+}
+
+function buildExplanations(job, dims){
+  const meet=[], check=[], questions=[];
+
+  if(dims.jobfit.applicable){
+    if(dims.jobfit.subscore===100) meet.push('경력 직무군(' + familyLabel(job.job_family) + ')과 일치하는 직무입니다.');
+  } else { check.push('직무 분류 정보가 명확하지 않습니다.'); questions.push('정확한 채용 직무명과 담당 업무를 확인하세요.'); }
+
+  if(dims.area.applicable){
+    if(dims.area.subscore===100) meet.push('희망 근무지역(' + job.work_area + ')에 위치한 근무지입니다.');
+    else if(dims.area.needCheck){ check.push('희망 지역 목록에는 없으나 통근 가능시간을 "무관"으로 선택하셨습니다.'); questions.push('회사 위치에서 자택까지 통근 시간을 확인하세요.'); }
+  } else { check.push('근무지 정보가 공고에 없어 확인이 필요합니다.'); questions.push('정확한 근무지 위치를 확인하세요.'); }
+
+  if(dims.employment.applicable){
+    if(dims.employment.subscore===100) meet.push('희망 고용형태(' + job.employment_type + ')와 일치합니다.');
+  } else { check.push('고용형태(정규직/계약직/시간제) 정보가 공고에 없어 확인이 필요합니다.'); questions.push('정규직/계약직/시간제 여부를 확인하세요.'); }
+
+  if(dims.schedule.applicable){
+    if(dims.schedule.subscore===100) meet.push('희망 근무형태와 일치하는 근무시간입니다.');
+  } else { check.push('근무 시간·형태 정보가 불명확해 확인이 필요합니다.'); questions.push('실제 근무 요일과 시간을 확인하세요.'); }
+
+  if(dims.pay.applicable){
+    if(dims.pay.subscore===100) meet.push('희망 급여 조건을 충족하는 급여(' + (job.pay_text||'') + ')입니다.');
+  } else { check.push('급여 정보가 공고에 없거나 월급으로 환산되지 않아 확인이 필요합니다' + (job.pay_text? ' (공고 표기: '+job.pay_text+')':'') + '.'); questions.push('정확한 급여 조건을 확인하세요.'); }
+
+  if(dims.prefLicense.applicable && dims.prefLicense.subscore===100){
+    meet.push('보유 자격이 우대사항(' + job.preferred_license + ')에 해당합니다.');
+  }
+
+  if(!dims.physical.applicable){ check.push('신체활동 강도 정보가 공고에 없어 확인이 필요합니다.'); questions.push('업무 강도(서있는 시간, 물건 운반 등)를 확인하세요.'); }
+  else if(dims.physical.subscore===100) meet.push('신체활동 강도가 적합합니다.');
+
+  if(job.etc_note && job.etc_note.indexOf('[확인필요]')>=0){
+    check.push('기업 정보 중 일부가 원본 판독 불가로 비어 있습니다: ' + job.etc_note.replace('[확인필요] ',''));
+  }
+
+  return {meet: meet.slice(0,5), check, questions: questions.slice(0,3)};
+}
+
+/* =========================================================
+   결과 계산/렌더
+   ========================================================= */
+function currentWeights(){
+  const s = state.curSession;
+  return s.weightsOverride || computeWeights(s.intake.priorityRank);
+}
+
+function computeResults(){
+  const s = state.curSession;
+  const intake = s.intake;
+  const weights = currentWeights();
+  const areaFilter = document.getElementById('filterArea').value;
+  const empFilter = document.getElementById('filterEmployment').value;
+
+  const recommended = [];
+  const unmet = [];
+
+  state.companies.forEach(job=>{
+    if(areaFilter && job.work_area !== areaFilter) return;
+    if(empFilter && job.employment_type !== empFilter) return;
+    const reasons = hardFilter(job, intake);
+    if(reasons.length>0){ unmet.push({job, reasons}); return; }
+    const {dims, finalScore} = scoreJob(job, intake, weights);
+    const explain = buildExplanations(job, dims);
+    recommended.push({job, finalScore, dims, explain});
+  });
+
+  recommended.sort((a,b)=>b.finalScore - a.finalScore);
+  s.results = {recommended: recommended.slice(0,6), unmet};
+  if(!s.includeSet) s.includeSet = new Set();
+  s.results.recommended.forEach(r=>s.includeSet.add(r.job.job_id));
+}
+
+function renderWeightSliders(){
+  const wrap = document.getElementById('weightSliders');
+  const weights = currentWeights();
+  wrap.innerHTML = '';
+  Object.keys(WEIGHT_LABELS).forEach(k=>{
+    const row = document.createElement('div');
+    row.innerHTML = '<label>'+WEIGHT_LABELS[k]+' <span id="wval-'+k+'">'+weights[k]+'</span></label>'+
+      '<input type="range" min="0" max="40" value="'+weights[k]+'" id="wslider-'+k+'">';
+    wrap.appendChild(row);
+  });
+  Object.keys(WEIGHT_LABELS).forEach(k=>{
+    document.getElementById('wslider-'+k).addEventListener('input', e=>{
+      const s = state.curSession;
+      if(!s.weightsOverride) s.weightsOverride = Object.assign({}, currentWeights());
+      s.weightsOverride[k] = parseInt(e.target.value,10);
+      document.getElementById('wval-'+k).textContent = e.target.value;
+      computeResults(); renderResults(false);
+    });
+  });
+}
+
+function renderFilterAreaOptions(){
+  const sel = document.getElementById('filterArea');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">전체</option>' + SEOUL_GU.map(g=>'<option value="서울 '+g+'">서울 '+g+'</option>').join('');
+  sel.value = cur;
+}
+
+function renderResults(rebuildSliders){
+  const s = state.curSession;
+  document.getElementById('resultsWrap').style.display = 'block';
+  if(rebuildSliders) renderWeightSliders();
+
+  const cardsWrap = document.getElementById('topCards');
+  cardsWrap.innerHTML = '';
+  s.results.recommended.forEach(r=>{
+    const job = r.job;
+    const card = document.createElement('div');
+    card.className = 'company-card top';
+    const checked = s.includeSet.has(job.job_id) ? 'checked' : '';
+    card.innerHTML = `
+      <div class="score">${r.finalScore}점</div>
+      <div class="booth">${job.booth_no || '정보없음'}</div>
+      <div class="company-name">${job.company || '정보없음'}</div>
+      <div class="job-title">${job.job_title || '정보없음'}</div>
+      <div class="meta-row">
+        <span>지역: ${job.work_area || '정보없음'}</span>
+        <span>근무형태: ${job.work_schedule || '정보없음'}</span>
+        <span>급여: ${job.pay_text || '정보없음'}</span>
+      </div>
+      <div class="explain">
+        <ul class="meet">${r.explain.meet.map(m=>'<li>'+m+'</li>').join('')}</ul>
+        <ul class="check">${r.explain.check.map(m=>'<li>'+m+'</li>').join('')}</ul>
+        <ul class="questions"><li><strong>부스에서 물어볼 것</strong></li>${r.explain.questions.map(m=>'<li>'+m+'</li>').join('')}</ul>
+      </div>
+      <label><input type="checkbox" class="includeChk" data-jobid="${job.job_id}" ${checked}> 배부용 요약에 포함</label>
+      <div style="margin-top:0.4em;"><button class="ghost toggleStatusBtn" data-jobid="${job.job_id}">${job.status==='당일마감'?'모집중으로 표시':'당일마감으로 표시'}</button></div>
+    `;
+    cardsWrap.appendChild(card);
+  });
+  cardsWrap.querySelectorAll('.includeChk').forEach(chk=>{
+    chk.addEventListener('change', e=>{
+      const id = e.target.dataset.jobid;
+      if(e.target.checked) s.includeSet.add(id); else s.includeSet.delete(id);
+      renderRoute();
+    });
+  });
+  cardsWrap.querySelectorAll('.toggleStatusBtn').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      toggleCompanyStatus(e.target.dataset.jobid);
+      computeResults(); renderResults(false);
+    });
+  });
+
+  const unmetBody = document.querySelector('#unmetTable tbody');
+  unmetBody.innerHTML = '';
+  s.results.unmet.forEach(u=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${u.job.booth_no||'정보없음'}</td><td>${u.job.company||'정보없음'}</td><td>${u.job.job_title||'정보없음'}</td><td>${u.reasons.join('; ')}</td>`;
+    unmetBody.appendChild(tr);
+  });
+
+  renderRoute();
+  upsertSessionRecord();
+}
+
+function renderRoute(){
+  const s = state.curSession;
+  const selected = s.results.recommended.filter(r=>s.includeSet.has(r.job.job_id));
+  const sorted = selected.slice().sort((a,b)=> (a.job.booth_no||'').localeCompare(b.job.booth_no||'', 'ko'));
+  const wrap = document.getElementById('routeInfo');
+  if(sorted.length===0){ wrap.innerHTML = '<p>배부용 요약에 포함된 기업이 없습니다.</p>'; return; }
+  wrap.innerHTML = '<ol>' + sorted.map(r=>'<li><strong>'+(r.job.booth_no||'정보없음')+'</strong> - '+r.job.company+' ('+r.job.job_title+')</li>').join('') + '</ol>';
+}
+
+function toggleCompanyStatus(jobId){
+  const job = state.companies.find(c=>c.job_id===jobId);
+  if(!job) return;
+  job.status = (job.status==='당일마감') ? '모집중' : '당일마감';
+  LS.set(K.companies, state.companies);
+  renderStatusTable();
+}
+
+/* =========================================================
+   세션 저장(비식별 상담요약 로그)
+   ========================================================= */
+function intakeSummaryText(intake){
+  const parts = [];
+  parts.push('희망지역:' + (intake.areas.join(';')||'무관'));
+  parts.push('통근:' + intake.commute);
+  parts.push('경력직무군:' + (intake.jobFamilies.join(';')||'없음'));
+  parts.push('경력연수:' + (EXP_BRACKETS.find(b=>b.id===intake.exp)||{}).label);
+  parts.push('보유자격:' + (allLicenses(intake).join(';')||'없음'));
+  parts.push('희망고용형태:' + intake.employmentType);
+  parts.push('희망근무형태:' + intake.workSchedule);
+  parts.push('희망급여:' + (PAY_BRACKETS.find(b=>b.id===intake.pay)||{}).label);
+  parts.push('신체강도:' + intake.physical);
+  parts.push('우선순위:' + intake.priorityRank.map(c=>PRIORITY_ITEMS.find(p=>p.code===c).label).join('>'));
+  return parts.join(' | ');
+}
+
+function upsertSessionRecord(){
+  const s = state.curSession;
+  const rec = {
+    session_id: s.id,
+    timestamp: nowStamp(),
+    intake_summary: intakeSummaryText(s.intake),
+    recommended_job_ids: s.results.recommended.filter(r=>s.includeSet.has(r.job.job_id)).map(r=>r.job.job_id).join(';'),
+    counselor_memo: document.getElementById('counselorMemo').value || ''
+  };
+  const idx = state.sessions.findIndex(x=>x.session_id===s.id);
+  if(idx>=0) state.sessions[idx] = rec; else state.sessions.push(rec);
+  LS.set(K.sessions, state.sessions);
+  document.getElementById('sessionCount').textContent = state.sessions.length;
+}
+
+/* =========================================================
+   상담 시작/새 상담
+   ========================================================= */
+document.getElementById('btnStartSession').addEventListener('click', ()=>{
+  const id = nextSessionId();
+  state.curSession = {id, intake: blankIntake(), includeSet: new Set(), weightsOverride: null, results:{recommended:[],unmet:[]}};
+  document.getElementById('curSessionId').textContent = id;
+  document.getElementById('noSessionPanel').style.display = 'none';
+  document.getElementById('sessionPanel').style.display = 'block';
+  document.getElementById('resultsWrap').style.display = 'none';
+  document.getElementById('counselorMemo').value = '';
+  renderFilterAreaOptions();
+  setupIntakeUI();
+});
+document.getElementById('btnNewSession').addEventListener('click', ()=>{
+  if(!confirm('현재 상담을 마치고 새 상담을 시작할까요? (지금까지 입력은 상담요약에 저장되어 있습니다)')) return;
+  document.getElementById('sessionPanel').style.display = 'none';
+  document.getElementById('noSessionPanel').style.display = 'block';
+  state.curSession = null;
+});
+document.getElementById('btnCompute').addEventListener('click', ()=>{
+  const s = state.curSession;
+  if(s.intake.jobFamilies.length===0){ if(!confirm('경력 직무군을 선택하지 않았습니다. 이대로 진행할까요?')) return; }
+  s.weightsOverride = null;
+  computeResults();
+  renderResults(true);
+  document.getElementById('resultsWrap').scrollIntoView({behavior:'smooth'});
+});
+document.getElementById('filterArea').addEventListener('change', ()=>{ if(state.curSession && state.curSession.results){ computeResults(); renderResults(false); } });
+document.getElementById('filterEmployment').addEventListener('change', ()=>{ if(state.curSession && state.curSession.results){ computeResults(); renderResults(false); } });
+document.getElementById('counselorMemo').addEventListener('input', ()=>{ if(state.curSession && state.curSession.results.recommended) upsertSessionRecord(); });
+
+/* =========================================================
+   인쇄용 배부 요약
+   ========================================================= */
+document.getElementById('btnPrint').addEventListener('click', ()=>{
+  const s = state.curSession;
+  const selected = s.results.recommended.filter(r=>s.includeSet.has(r.job.job_id))
+    .sort((a,b)=>(a.job.booth_no||'').localeCompare(b.job.booth_no||'','ko'));
+  const eventName = document.getElementById('eventName').value || state.eventName;
+  let html = '';
+  if(eventName) html += '<h2>'+eventName+'</h2>';
+  html += '<h2>오늘의 추천 기업</h2>';
+  html += '<p>세션번호: '+s.id+' / 방문 순서대로 안내드립니다.</p>';
+  html += '<ol>';
+  selected.forEach(r=>{
+    html += '<li><strong style="font-size:1.3em;">'+(r.job.booth_no||'정보없음')+'</strong> '+r.job.company+' - '+r.job.job_title+
+      '<br>근무지: '+(r.job.work_area||'정보없음')+' / 근무형태: '+(r.job.work_schedule||'정보없음')+' / 급여: '+(r.job.pay_text||'정보없음')+
+      '<br>부스에서 확인할 것: '+r.explain.questions.join(', ')+'</li>';
+  });
+  html += '</ol>';
+  html += '<p style="font-size:0.9em;color:#555;">모집상태는 현장 상황에 따라 바뀔 수 있으니 부스에서 최종 확인하세요.</p>';
+  document.getElementById('printSummary').innerHTML = html;
+  window.print();
+});
+
+/* =========================================================
+   운영관리: 기업 데이터 로드
+   ========================================================= */
+function applyCompaniesData(objs, sourceLabel){
+  state.companies = objs;
+  state.companiesLoadedAt = nowStamp() + ' (' + sourceLabel + ')';
+  LS.set(K.companies, state.companies);
+  LS.set(K.companiesLoadedAt, state.companiesLoadedAt);
+  renderCompanyAdminInfo();
+  renderStatusTable();
+}
+document.getElementById('fileCompanies').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{ applyCompaniesData(csvRowsToObjects(reader.result), file.name); };
+  reader.readAsText(file, 'utf-8');
+});
+document.getElementById('btnLoadSampleCompanies').addEventListener('click', ()=>{
+  if(!confirm('현재 불러온 기업 데이터를 내장 샘플로 되돌릴까요?')) return;
+  applyCompaniesData(csvRowsToObjects(BUILTIN_COMPANIES_CSV), '내장 샘플');
+});
+function renderCompanyAdminInfo(){
+  document.getElementById('companyCount').textContent = state.companies.length;
+  document.getElementById('companyLoadedAt').textContent = state.companiesLoadedAt || '(내장 샘플 사용 중)';
+}
+
+/* =========================================================
+   운영관리: 모집상태 관리 표
+   ========================================================= */
+function renderStatusTable(){
+  const body = document.querySelector('#statusTable tbody');
+  body.innerHTML = '';
+  state.companies.forEach(job=>{
+    const tr = document.createElement('tr');
+    const isClosed = job.status==='당일마감';
+    tr.innerHTML = `<td>${job.booth_no||''}</td><td>${job.company||''}</td><td>${job.job_title||'정보없음'}</td>
+      <td><span class="badge ${isClosed?'badge-danger':'badge-ok'}">${job.status||'정보없음'}</span></td>
+      <td><button class="ghost toggleStatusBtn2" data-jobid="${job.job_id}">${isClosed?'모집중으로 전환':'당일마감으로 전환'}</button></td>`;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('.toggleStatusBtn2').forEach(btn=>{
+    btn.addEventListener('click', e=>toggleCompanyStatus(e.target.dataset.jobid));
+  });
+}
+
+/* =========================================================
+   운영관리: 마감정보 공유(확장모드)
+   ========================================================= */
+document.getElementById('btnExportStatus').addEventListener('click', ()=>{
+  const rows = state.companies.map(j=>({job_id:j.job_id, status:j.status, updated_at: nowStamp()}));
+  downloadText('status_'+todayStr()+'.csv', objectsToCSV(['job_id','status','updated_at'], rows));
+});
+document.getElementById('fileStatus').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const rows = csvRowsToObjects(reader.result);
+    let applied = 0;
+    rows.forEach(r=>{
+      const job = state.companies.find(c=>c.job_id===r.job_id);
+      if(job){ job.status = r.status; applied++; }
+    });
+    LS.set(K.companies, state.companies);
+    state.statusUpdatedAt = nowStamp();
+    LS.set(K.statusUpdatedAt, state.statusUpdatedAt);
+    renderStatusTable(); renderStatusMeta();
+    alert(applied + '건의 모집상태가 갱신되었습니다.');
+  };
+  reader.readAsText(file, 'utf-8');
+});
+function renderStatusMeta(){
+  const el = document.getElementById('statusUpdatedAt');
+  const warn = document.getElementById('statusStaleWarn');
+  if(!state.statusUpdatedAt){ el.textContent = '불러온 적 없음'; warn.style.display='none'; return; }
+  el.textContent = state.statusUpdatedAt;
+  const diffMin = (Date.now() - new Date(state.statusUpdatedAt.replace(' ','T')).getTime()) / 60000;
+  warn.style.display = diffMin > 30 ? 'inline-block' : 'none';
+}
+setInterval(renderStatusMeta, 60000);
+
+/* =========================================================
+   운영관리: 컨설턴트 명단
+   ========================================================= */
+document.getElementById('fileConsultants').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    state.consultants = csvRowsToObjects(reader.result);
+    LS.set(K.consultants, state.consultants);
+    renderConsultantTable(); renderAssignBoard(); populateConsultantSelects();
+  };
+  reader.readAsText(file, 'utf-8');
+});
+function renderConsultantTable(){
+  const body = document.querySelector('#consultantTable tbody');
+  body.innerHTML = '';
+  state.consultants.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c['성명']}</td><td>${c['전문 직무군']}</td><td>${c['담당 지역']}</td><td>${c['1일 배정 상한']}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* =========================================================
+   운영관리: 동의문구
+   ========================================================= */
+document.getElementById('fileConsent').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const text = reader.result;
+    const consentMatch = text.split('===CONSENT_TEXT===')[1] || text;
+    const parts = consentMatch.split('===RETENTION_TEXT===');
+    state.consentText = {consent: (parts[0]||'').trim(), retention: (parts[1]||'').trim()};
+    LS.set(K.consentText, state.consentText);
+    renderConsentUI();
+  };
+  reader.readAsText(file, 'utf-8');
+});
+function renderConsentUI(){
+  document.getElementById('consentBox').textContent = state.consentText.consent;
+  document.getElementById('retentionBox').textContent = state.consentText.retention;
+  const isPlaceholder = state.consentText.consent.indexOf('입력 필요') >= 0;
+  document.getElementById('consentStatus').textContent = isPlaceholder ? '⚠ 플레이스홀더 사용 중 - 기관 확정 문구로 교체 필요' : '기관 확정 문구 로드됨';
+}
+
+/* =========================================================
+   운영관리: 행사명 저장
+   ========================================================= */
+document.getElementById('eventName').value = state.eventName;
+document.getElementById('eventName').addEventListener('input', e=>{ state.eventName = e.target.value; LS.set(K.eventName, state.eventName); });
+
+/* =========================================================
+   운영관리: 상담요약 내보내기 / 세션 전체 삭제
+   ========================================================= */
+document.getElementById('btnExportSessions').addEventListener('click', ()=>{
+  downloadText('상담요약_'+todayStr()+'.csv',
+    objectsToCSV(['session_id','timestamp','intake_summary','recommended_job_ids','counselor_memo'], state.sessions));
+});
+document.getElementById('btnResetSession').addEventListener('click', ()=>{
+  if(!confirm('비식별 상담 세션 데이터를 모두 삭제할까요? (신청자 명부는 지워지지 않습니다) 삭제 전 CSV로 내보냈는지 확인하세요.')) return;
+  state.sessions = []; LS.set(K.sessions, []);
+  state.curSession = null;
+  document.getElementById('sessionPanel').style.display = 'none';
+  document.getElementById('noSessionPanel').style.display = 'block';
+  document.getElementById('sessionCount').textContent = 0;
+  alert('세션 데이터가 삭제되었습니다.');
+});
+
+/* =========================================================
+   간편 상담신청 - PIN 게이트
+   ========================================================= */
+function renderPinGate(){
+  const hasPin = !!state.pin;
+  document.getElementById('pinSetupBox').style.display = hasPin ? 'none' : 'block';
+  document.getElementById('pinEnterBox').style.display = hasPin ? 'block' : 'none';
+  document.getElementById('applyPinGate').style.display = state.pinUnlocked ? 'none' : 'block';
+  document.getElementById('applyContent').style.display = state.pinUnlocked ? 'block' : 'none';
+}
+document.getElementById('btnSetPin').addEventListener('click', ()=>{
+  const v = document.getElementById('pinNewInput').value;
+  if(!/^\d{4}$/.test(v)){ alert('4자리 숫자로 입력하세요.'); return; }
+  state.pin = v; LS.set(K.pin, v);
+  state.pinUnlocked = true;
+  renderPinGate(); initApplyTab();
+});
+document.getElementById('btnEnterPin').addEventListener('click', ()=>{
+  const v = document.getElementById('pinEnterInput').value;
+  if(v === state.pin){ state.pinUnlocked = true; renderPinGate(); initApplyTab(); }
+  else alert('PIN이 일치하지 않습니다.');
+});
+
+/* =========================================================
+   간편 상담신청 - 입력 화면
+   ========================================================= */
+let applyInited = false;
+function initApplyTab(){
+  if(applyInited) return; applyInited = true;
+  renderConsentUI();
+
+  const regionSel = document.getElementById('applyRegion');
+  regionSel.innerHTML = SEOUL_GU.map(g=>'<option>서울 '+g+'</option>').join('');
+
+  const applyState = {contactTime:'', contactDay:[], families:[]};
+  renderChips('chipsContactTime', ['오전','오후','저녁'].map(v=>({label:v,value:v})), {
+    multi:false, getSelected:()=>applyState.contactTime, setSelected:(v)=>{applyState.contactTime=v;}
+  });
+  renderChips('chipsContactDay', ['월','화','수','목','금','토','일'].map(v=>({label:v,value:v})), {
+    multi:true, getSelected:()=>applyState.contactDay, setSelected:(v)=>{applyState.contactDay=v;}
+  });
+  renderChips('chipsApplyFamily', JOB_FAMILIES.map(f=>({label:f.label, value:f.code})), {
+    multi:true, max:3, getSelected:()=>applyState.families, setSelected:(v)=>{applyState.families=v;}
+  });
+
+  if(state.curSession){
+    document.getElementById('applySessionId').value = state.curSession.id;
+    applyState.families = state.curSession.intake.jobFamilies.slice();
+    refreshChipStyles('chipsApplyFamily', {multi:true, getSelected:()=>applyState.families});
+  }
+
+  const consentCheck = document.getElementById('consentCheck');
+  const saveBtn = document.getElementById('btnSaveApplicant');
+  consentCheck.addEventListener('change', ()=>{ saveBtn.disabled = !consentCheck.checked; });
+
+  document.getElementById('applyPhone').addEventListener('input', checkDuplicate);
+  function checkDuplicate(){
+    const phone = document.getElementById('applyPhone').value.replace(/\D/g,'');
+    const last4 = phone.slice(-4);
+    const warnBox = document.getElementById('dupWarning');
+    if(last4.length<4){ warnBox.style.display='none'; return; }
+    const dups = state.applicants.filter(a=>(a.phone||'').replace(/\D/g,'').slice(-4)===last4);
+    if(dups.length>0){
+      warnBox.style.display='block';
+      warnBox.textContent = '⚠ 연락처 뒤 4자리가 같은 기존 신청이 ' + dups.length + '건 있습니다. 동일인 여부를 확인하세요 (자동으로 막지 않으니 확인 후 저장하세요).';
+    } else warnBox.style.display='none';
+  }
+
+  saveBtn.addEventListener('click', ()=>{
+    if(!consentCheck.checked){ alert('동의 체크 후 저장할 수 있습니다.'); return; }
+    const rec = {
+      session_id: document.getElementById('applySessionId').value || '',
+      name: document.getElementById('applyName').value || '',
+      phone: document.getElementById('applyPhone').value || '',
+      contact_time: applyState.contactTime + (applyState.contactDay.length? ' ('+applyState.contactDay.join(',')+')' : ''),
+      region: document.getElementById('applyRegion').value || '',
+      interest_families: applyState.families.map(familyLabel).join(';'),
+      consent: '동의',
+      consent_at: nowStamp(),
+      paper_consent: document.getElementById('paperConsentCheck').checked ? 'Y' : 'N',
+      channel: document.getElementById('applyChannel').value || '',
+      assigned_consultant: '',
+      assignment_status: '미배정'
+    };
+    if(!rec.name || !rec.phone){ if(!confirm('성명 또는 연락처가 비어 있습니다. 이대로 저장할까요?')){ return; } }
+    state.applicants.push(rec);
+    LS.set(K.applicants, state.applicants);
+    document.getElementById('applyName').value=''; document.getElementById('applyPhone').value='';
+    document.getElementById('applyChannel').value=''; document.getElementById('dupWarning').style.display='none';
+    consentCheck.checked=false; document.getElementById('paperConsentCheck').checked=false; saveBtn.disabled=true;
+    renderApplicantTable(); renderAssignBoard();
+    alert('저장되었습니다.');
+  });
+
+  renderApplicantTable();
+  renderConsultantTable();
+  renderAssignBoard();
+}
+
+function maskName(name){
+  if(!name) return '정보없음';
+  if(name.length<=1) return name;
+  if(name.length===2) return name[0]+'○';
+  return name[0]+'○'.repeat(name.length-2)+name[name.length-1];
+}
+function maskPhone(phone){
+  if(!phone) return '정보없음';
+  const digits = phone.replace(/\D/g,'');
+  if(digits.length<7) return phone;
+  return digits.slice(0,3)+'-****-'+digits.slice(-4);
+}
+
+function renderApplicantTable(){
+  const body = document.querySelector('#applicantTable tbody');
+  body.innerHTML = '';
+  state.applicants.forEach((a, idx)=>{
+    const tr = document.createElement('tr');
+    tr.dataset.idx = idx;
+    tr.dataset.masked = '1';
+    tr.innerHTML = `<td>${a.session_id}</td>
+      <td class="masked-cell" data-field="name">${maskName(a.name)}</td>
+      <td class="masked-cell" data-field="phone">${maskPhone(a.phone)}</td>
+      <td>${a.contact_time}</td><td>${a.region}</td><td>${a.interest_families}</td>
+      <td>
+        <select class="consultantSelect" data-idx="${idx}"><option value="">-</option></select>
+      </td>
+      <td>
+        <select class="statusSelect" data-idx="${idx}">
+          ${['미배정','배정','연락시도','연락완료','상담예약','종결'].map(s=>'<option '+(a.assignment_status===s?'selected':'')+'>'+s+'</option>').join('')}
+        </select>
+      </td>`;
+    body.appendChild(tr);
+  });
+  document.querySelectorAll('.masked-cell').forEach(td=>{
+    td.addEventListener('click', ()=>{
+      const tr = td.closest('tr'); const idx = tr.dataset.idx; const a = state.applicants[idx];
+      const masked = tr.dataset.masked === '1';
+      tr.querySelector('[data-field=name]').textContent = masked ? a.name : maskName(a.name);
+      tr.querySelector('[data-field=phone]').textContent = masked ? a.phone : maskPhone(a.phone);
+      tr.dataset.masked = masked ? '0' : '1';
+    });
+  });
+  populateConsultantSelects();
+  document.querySelectorAll('.consultantSelect').forEach(sel=>{
+    sel.value = state.applicants[sel.dataset.idx].assigned_consultant || '';
+    sel.addEventListener('change', e=>{
+      const idx = e.target.dataset.idx;
+      state.applicants[idx].assigned_consultant = e.target.value;
+      if(e.target.value && state.applicants[idx].assignment_status==='미배정') state.applicants[idx].assignment_status='배정';
+      LS.set(K.applicants, state.applicants);
+      renderApplicantTable(); renderAssignBoard();
+    });
+  });
+  document.querySelectorAll('.statusSelect').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      state.applicants[e.target.dataset.idx].assignment_status = e.target.value;
+      LS.set(K.applicants, state.applicants);
+      renderAssignBoard();
+    });
+  });
+}
+function populateConsultantSelects(){
+  document.querySelectorAll('.consultantSelect').forEach(sel=>{
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">-</option>' + state.consultants.map(c=>'<option>'+c['성명']+'</option>').join('');
+    sel.value = cur;
+  });
+}
+
+function suggestConsultant(applicant){
+  const loadCount = {};
+  state.consultants.forEach(c=>loadCount[c['성명']]=0);
+  state.applicants.forEach(a=>{ if(a.assigned_consultant) loadCount[a.assigned_consultant] = (loadCount[a.assigned_consultant]||0)+1; });
+  let best = null;
+  state.consultants.forEach(c=>{
+    const cap = parseInt(c['1일 배정 상한'],10) || 999;
+    const cur = loadCount[c['성명']] || 0;
+    if(cur >= cap) return;
+    const famOk = c['전문 직무군']==='전체' || applicant.interest_families.split(';').some(f=>c['전문 직무군'].includes(f));
+    const regionOk = c['담당 지역']==='전체' || (applicant.region||'').includes(c['담당 지역']);
+    const score = (famOk?2:0) + (regionOk?1:0) + (1 - cur/cap);
+    if(!best || score > best.score) best = {name:c['성명'], score};
+  });
+  return best ? best.name : null;
+}
+
+function renderAssignBoard(){
+  const body = document.querySelector('#assignBoard tbody');
+  body.innerHTML = '';
+  const statuses = ['미배정','배정','연락시도','연락완료','상담예약','종결'];
+  state.consultants.forEach(c=>{
+    const mine = state.applicants.filter(a=>a.assigned_consultant===c['성명']);
+    const counts = statuses.map(s=>s+':'+mine.filter(a=>a.assignment_status===s).length).join(' ');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c['성명']}</td><td>${mine.length}</td><td>${counts}</td><td>${c['1일 배정 상한']}</td>`;
+    body.appendChild(tr);
+  });
+  const unassigned = state.applicants.filter(a=>!a.assigned_consultant).length;
+  document.getElementById('unassignedCount').textContent = unassigned;
+}
+
+/* =========================================================
+   간편 상담신청 - 내보내기 / 삭제
+   ========================================================= */
+document.getElementById('btnExportApplicants').addEventListener('click', ()=>{
+  downloadText('신청자명부_'+todayStr()+'.csv',
+    objectsToCSV(['session_id','name','phone','contact_time','region','interest_families','consent','assigned_consultant','assignment_status'], state.applicants));
+});
+document.getElementById('btnDeleteApplicants').addEventListener('click', ()=>{
+  if(!confirm('신청자 명부를 완전히 삭제합니다. CSV로 내보냈는지 먼저 확인하세요. 계속할까요?')) return;
+  if(!confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  state.applicants = []; LS.set(K.applicants, []);
+  renderApplicantTable(); renderAssignBoard();
+  alert('신청자 명부가 삭제되었습니다.');
+});
+
+document.getElementById('btnGoApply').addEventListener('click', ()=>{
+  document.querySelector('.tab-btn[data-tab=apply]').click();
+  if(state.pinUnlocked){
+    document.getElementById('applySessionId').value = state.curSession.id;
+  }
+});
+
+/* =========================================================
+   초기화
+   ========================================================= */
+function init(){
+  renderDeviceUI();
+  buildDeviceButtons();
+  renderCompanyAdminInfo();
+  renderStatusTable();
+  renderStatusMeta();
+  renderConsultantTable();
+  renderConsentUI();
+  renderPinGate();
+  document.getElementById('sessionCount').textContent = state.sessions.length;
+}
+init();
+</script>
+</body>
+</html>
