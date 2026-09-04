@@ -138,9 +138,9 @@
 
   <div id="matchContent">
     <div class="panel" id="companySearchPanel">
-      <h2>기업명으로 빠른 검색</h2>
-      <p class="hint">내담자가 특정 기업을 이미 알고 있을 때, 매칭 절차 없이 바로 상세 정보를 확인할 수 있습니다.</p>
-      <input type="text" id="companySearchInput" placeholder="기업명을 입력하세요 (예: 대한노인회, 세스코)" style="width:100%;">
+      <h2>기업명·직무명으로 빠른 검색</h2>
+      <p class="hint">내담자가 특정 기업이나 직무를 이미 알고 있을 때, 매칭 절차 없이 바로 상세 정보를 확인할 수 있습니다.</p>
+      <input type="text" id="companySearchInput" placeholder="기업명 또는 직무명을 입력하세요 (예: 대한노인회, 요양보호사)" style="width:100%;">
       <div id="companySearchResults" style="margin-top:0.8em;"></div>
     </div>
 
@@ -1130,8 +1130,8 @@ function renderCompanySearch(query){
   const wrap = document.getElementById('companySearchResults');
   const q = (query || '').trim();
   if(!q){ wrap.innerHTML = ''; return; }
-  const matches = state.companies.filter(c => (c.company || '').includes(q));
-  if(matches.length === 0){ wrap.innerHTML = '<p class="hint">일치하는 기업이 없습니다.</p>'; return; }
+  const matches = state.companies.filter(c => (c.company || '').includes(q) || (c.job_title || '').includes(q));
+  if(matches.length === 0){ wrap.innerHTML = '<p class="hint">일치하는 기업·직무가 없습니다.</p>'; return; }
   wrap.innerHTML = '<div class="card-grid">' + matches.map(companyDetailCardHTML).join('') + '</div>';
   wrap.querySelectorAll('.toggleStatusBtnSearch').forEach(btn=>{
     btn.addEventListener('click', e=>toggleCompanyStatus(e.target.dataset.jobid));
