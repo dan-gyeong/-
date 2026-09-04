@@ -1,0 +1,300 @@
+<title>북부캠퍼스 채용박람회 검색</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#F6F3EC;
+    --surface:#FFFFFF;
+    --surface-2:#EFEAE0;
+    --text:#221F1A;
+    --muted:#6E675A;
+    --border:#DDD5C4;
+    --accent:#1B6E62;
+    --accent-dark:#124A42;
+    --accent-tint:#E4F0EC;
+    --ok:#2F6B33;
+    --ok-bg:#E4F1E0;
+    --danger:#AE3A22;
+    --danger-bg:#FBE7E0;
+    --focus:#1B6E62;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171613;
+      --surface:#211F1B;
+      --surface-2:#2A2723;
+      --text:#EFEAE1;
+      --muted:#A9A192;
+      --border:#3A362F;
+      --accent:#4FBBA8;
+      --accent-dark:#7ED4C4;
+      --accent-tint:#1D302C;
+      --ok:#8FCB8A;
+      --ok-bg:#213524;
+      --danger:#E68366;
+      --danger-bg:#3A241C;
+      --focus:#4FBBA8;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171613;
+    --surface:#211F1B;
+    --surface-2:#2A2723;
+    --text:#EFEAE1;
+    --muted:#A9A192;
+    --border:#3A362F;
+    --accent:#4FBBA8;
+    --accent-dark:#7ED4C4;
+    --accent-tint:#1D302C;
+    --ok:#8FCB8A;
+    --ok-bg:#213524;
+    --danger:#E68366;
+    --danger-bg:#3A241C;
+    --focus:#4FBBA8;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Noto Sans KR","Malgun Gothic",sans-serif;
+    font-size:17px;
+    line-height:1.5;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1,h2,h3{font-family:"Gothic A1","Malgun Gothic",sans-serif; margin:0; text-wrap:balance;}
+  button, input{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    background:var(--accent-dark);
+    color:#fff;
+    padding:14px 16px 16px;
+  }
+  .topbar .eyebrow{
+    font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#CFEAE3; margin-bottom:2px;
+  }
+  .topbar h1{font-size:19px; font-weight:800; color:#fff; margin-bottom:2px;}
+  .topbar .sub{font-size:13px; color:#CFEAE3; margin-bottom:12px;}
+
+  .search-wrap{position:relative;}
+  .search-wrap input{
+    width:100%; padding:14px 44px 14px 16px; border-radius:14px; border:none;
+    font-size:17px; background:#fff; color:var(--text);
+  }
+  .search-wrap input::placeholder{color:var(--muted);}
+  .search-icon{
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    color:var(--muted); pointer-events:none; font-size:18px;
+  }
+
+  .family-scroll{
+    display:flex; gap:8px; overflow-x:auto; padding:12px 16px 0; margin:0 -16px 0;
+    scrollbar-width:none;
+  }
+  .family-scroll::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto; padding:8px 14px; border-radius:999px; border:1.5px solid #3C7F74;
+    background:#1B6E62; color:#fff; font-size:14px; font-weight:600; white-space:nowrap;
+  }
+  .chip.active{background:#fff; color:var(--accent-dark); border-color:#fff;}
+
+  main{max-width:640px; margin:0 auto; padding:14px 16px 48px;}
+
+  .status-line{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:13px; color:var(--muted); margin:2px 4px 12px;
+  }
+  .status-line strong{color:var(--text); font-variant-numeric:tabular-nums;}
+
+  .disclaimer{
+    background:var(--accent-tint); border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px; font-size:13px; color:var(--muted); margin-bottom:14px;
+  }
+
+  .card-list{display:flex; flex-direction:column; gap:10px;}
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:14px 14px; cursor:pointer;
+  }
+  .card-head{display:flex; align-items:flex-start; gap:12px;}
+  .booth{
+    flex:0 0 auto; min-width:64px; text-align:center;
+    background:var(--accent); color:#fff; border-radius:10px;
+    padding:8px 6px; font-family:"Gothic A1",sans-serif; font-weight:800;
+    font-size:15px; line-height:1.15; font-variant-numeric:tabular-nums;
+  }
+  .booth small{display:block; font-size:10px; font-weight:600; opacity:.85; letter-spacing:.03em;}
+  .card-main{flex:1 1 auto; min-width:0;}
+  .company{font-weight:700; font-size:15.5px; color:var(--text);}
+  .jobtitle{font-family:"Gothic A1",sans-serif; font-weight:800; font-size:17.5px; margin-top:2px; color:var(--accent-dark);}
+  .meta-row{display:flex; flex-wrap:wrap; gap:6px 10px; margin-top:8px; font-size:13px; color:var(--muted);}
+  .meta-row span{white-space:nowrap;}
+  .badge{
+    display:inline-block; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:700;
+  }
+  .badge.ok{background:var(--ok-bg); color:var(--ok);}
+  .badge.closed{background:var(--danger-bg); color:var(--danger);}
+  .chevron{flex:0 0 auto; color:var(--muted); font-size:14px; margin-top:6px; transition:transform .15s ease;}
+  .card.open .chevron{transform:rotate(180deg);}
+
+  .detail{
+    display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border);
+    font-size:14.5px;
+  }
+  .card.open .detail{display:block;}
+  .detail dl{display:grid; grid-template-columns:88px 1fr; gap:7px 10px; margin:0;}
+  .detail dt{color:var(--muted); font-weight:600;}
+  .detail dd{margin:0; color:var(--text);}
+  .detail .note{
+    margin-top:10px; padding:9px 10px; background:var(--surface-2); border-radius:8px;
+    font-size:13.5px; color:var(--muted);
+  }
+
+  .empty{
+    text-align:center; padding:48px 20px; color:var(--muted);
+  }
+  .empty .big{font-size:32px; margin-bottom:8px;}
+
+  footer{
+    max-width:640px; margin:24px auto 0; padding:0 16px 8px;
+    font-size:12.5px; color:var(--muted); text-align:center; line-height:1.6;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    * {transition:none !important;}
+  }
+</style>
+
+<div class="topbar">
+  <div class="eyebrow">서울시50플러스 북부캠퍼스</div>
+  <h1>2026 서울 북부권역 중장년 채용박람회</h1>
+  <div class="sub">9.10.(목) 10:00~17:00 · 마들로13길 84 · 43개사·48개 직무</div>
+  <div class="search-wrap">
+    <input type="text" id="q" placeholder="회사명 또는 직무명 검색 (예: 대한노인회, 요양보호사)" autocomplete="off" inputmode="search">
+    <span class="search-icon">🔍</span>
+  </div>
+</div>
+<div class="family-scroll" id="familyScroll"></div>
+
+<main>
+  <div class="disclaimer">부스 배치도는 현장 안내판에서 확인하세요. 여기 번호는 안내문 기준 <strong>연번</strong>이며, 모집 상태는 현장에서 바뀔 수 있습니다.</div>
+  <div class="status-line"><span>검색 결과</span><span><strong id="count">0</strong>건</span></div>
+  <div class="card-list" id="list"></div>
+  <div class="empty" id="empty" style="display:none;">
+    <div class="big">🔎</div>
+    일치하는 회사·직무가 없습니다.<br>다른 이름으로 검색해 보세요.
+  </div>
+</main>
+
+<footer>
+  본 정보는 2026.8.26. 기준 안내 자료를 정리한 것이며 세부 내용은 변경될 수 있습니다.<br>
+  주최 서울시50플러스재단 · 운영사무국 070-4699-1792
+</footer>
+
+<script>
+const JOBS = [{"job_id": "TBD-1-1", "booth_no": "TBD-1", "company": "국가데이터처 서울사무소", "job_title": "기간제근로자 및 도급조사원", "job_family": "ADM", "headcount": "160", "work_area": "서울 종로구", "work_schedule": "일 8시간 이상", "pay_text": "채용 기간 및 구분별 상이", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "직무내용: 연간 및 특별조사 행정처리, 현장조사", "status": "모집중"}, {"job_id": "TBD-2-1", "booth_no": "TBD-2", "company": "나누리사회적협동조합", "job_title": "가사관리사", "job_family": "CARE", "headcount": "10", "work_area": "서울 노원구, 도봉구 등", "work_schedule": "9~12시 또는 14~17시 (선택가능)", "pay_text": "시급 1.7만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-3-1", "booth_no": "TBD-3", "company": "노원시니어클럽", "job_title": "시니어 일자리", "job_family": "ADM", "headcount": "5", "work_area": "기관별 상이", "work_schedule": "일 1~7시간", "pay_text": "기관별 상이", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "기관별 상이", "etc_note": "직무내용: 시니어 취업상담, 구직등록, 희망직종 상담, 기업 구인정보 제공 및 맞춤형 취업연계", "status": "모집중"}, {"job_id": "TBD-4-1", "booth_no": "TBD-4", "company": "노원여성인력개발센터", "job_title": "사회복지사", "job_family": "CARE", "headcount": "", "work_area": "서울 노원구, 도봉구, 중랑구 등", "work_schedule": "일 8시간 이상", "pay_text": "216만원", "required_license": "사회복지사자격증", "preferred_license": "", "required_exp_years": "", "age_note": "만 63세", "etc_note": "총 4명 채용(사회복지사/사무원/간호조무사 합산, 직무별 세부인원 미기재). 직무내용: 주야간보호센터 및 요양원 프로그램 계획·운영 등", "status": "모집중"}, {"job_id": "TBD-4-2", "booth_no": "TBD-4", "company": "노원여성인력개발센터", "job_title": "사무원", "job_family": "ADM", "headcount": "", "work_area": "서울 노원구, 도봉구, 중랑구 등", "work_schedule": "일 8시간 이상", "pay_text": "216만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 63세", "etc_note": "총 4명 채용(사회복지사/사무원/간호조무사 합산, 직무별 세부인원 미기재). 자격요건이 사무원에 개별 적용되는지 불명확 - 부스에서 확인 필요. 직무내용: 주야간보호센터 및 요양원 프로그램 계획·운영 등", "status": "모집중"}, {"job_id": "TBD-4-3", "booth_no": "TBD-4", "company": "노원여성인력개발센터", "job_title": "간호조무사", "job_family": "CARE", "headcount": "", "work_area": "서울 노원구, 도봉구, 중랑구 등", "work_schedule": "일 8시간 이상", "pay_text": "216만원", "required_license": "간호조무사자격증", "preferred_license": "", "required_exp_years": "", "age_note": "만 63세", "etc_note": "총 4명 채용(사회복지사/사무원/간호조무사 합산, 직무별 세부인원 미기재). 직무내용: 어르신 케어 및 간호업무", "status": "모집중"}, {"job_id": "TBD-5-1", "booth_no": "TBD-5", "company": "뉴던 주식회사", "job_title": "서울형 및 공공사업 가사서비스 제공 가사관리사", "job_family": "CARE", "headcount": "10", "work_area": "서울 전지역 (거주지 인근 매칭)", "work_schedule": "탄력근무제", "pay_text": "시급 1.7만원 / 기본 3시간", "required_license": "", "preferred_license": "요양보호사;가사관리사자격증", "required_exp_years": "", "age_note": "", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-6-1", "booth_no": "TBD-6", "company": "다산케어센터", "job_title": "산후관리사", "job_family": "CARE", "headcount": "10", "work_area": "서울 노원구, 도봉구", "work_schedule": "일 8시간 이상 / 9~18시", "pay_text": "219만원", "required_license": "산모신생아건강관리수료증", "preferred_license": "", "required_exp_years": "", "age_note": "만 70세", "etc_note": "관련업종 경력자 우대(연수 미기재)", "status": "모집중"}, {"job_id": "TBD-7-1", "booth_no": "TBD-7", "company": "(주)대교에듀캠프", "job_title": "트니시니어 전문강사(신체/인지발달/미술/국악)", "job_family": "ETC", "headcount": "10", "work_area": "협의 후 결정", "work_schedule": "일 1~3시간", "pay_text": "240만원", "required_license": "", "preferred_license": "", "required_exp_years": "1", "age_note": "만 75세", "etc_note": "공고에는 \"1~3년 경력\"으로 표기됨(최소값인 1년으로 반영)", "status": "모집중"}, {"job_id": "TBD-8-1", "booth_no": "TBD-8", "company": "대한노인회 도봉구지회 취업지원센터", "job_title": "초·중·고 시설관리원", "job_family": "FAC", "headcount": "10", "work_area": "서울 전지역", "work_schedule": "일 8시간 이상 / 7시 30분~16시 30분", "pay_text": "250만원", "required_license": "", "preferred_license": "소방;가스;전기;조경;사무능력 관련 자격증", "required_exp_years": "", "age_note": "65세", "etc_note": "\"자격증 소지 및 경력자 우대\"로 표기되어 필수가 아닌 우대로 반영함", "status": "모집중"}, {"job_id": "TBD-9-1", "booth_no": "TBD-9", "company": "대한노인회 도봉구지회 취업지원센터", "job_title": "초·중·고 당직원", "job_family": "FAC", "headcount": "20", "work_area": "서울 전지역", "work_schedule": "일 4~7시간 / 16시 30분~8시 30분 (토·일·공휴일 24시간)", "pay_text": "160만원 내외", "required_license": "경비원 신임교육 이수 또는 경비원 자격", "preferred_license": "", "required_exp_years": "", "age_note": "70세", "etc_note": "경증 장애인 우대(채용우대사항, 자격증 아님)", "status": "모집중"}, {"job_id": "TBD-10-1", "booth_no": "TBD-10", "company": "대한노인회 도봉구지회 취업지원센터", "job_title": "건물 경비원", "job_family": "FAC", "headcount": "20", "work_area": "서울 전지역", "work_schedule": "일 8시간 이상", "pay_text": "230만원 내외", "required_license": "경비원 신임교육 이수 또는 경비원 자격", "preferred_license": "", "required_exp_years": "", "age_note": "72세", "etc_note": "경증 장애인 우대(채용우대사항, 자격증 아님)", "status": "모집중"}, {"job_id": "TBD-11-1", "booth_no": "TBD-11", "company": "대한노인회 도봉구지회 취업지원센터", "job_title": "건물 청소원", "job_family": "FAC", "headcount": "15", "work_area": "서울 전지역", "work_schedule": "일 4~7시간", "pay_text": "170만원 내외", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "75세", "etc_note": "청소 경력자 우대(연수 미기재, 자격증 아님)", "status": "모집중"}, {"job_id": "TBD-12-1", "booth_no": "TBD-12", "company": "대한노인회 도봉구지회 취업지원센터", "job_title": "시험감독보조원", "job_family": "ADM", "headcount": "10", "work_area": "서울 전지역", "work_schedule": "일 4~7시간", "pay_text": "일당 8만원 내외", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "65세", "etc_note": "교사 경력자, 행정직, 공공기관 퇴직자 우대(자격증 아님)", "status": "모집중"}, {"job_id": "TBD-13-1", "booth_no": "TBD-13", "company": "대한노인회 도봉구지회 취업지원센터", "job_title": "요양보호사", "job_family": "CARE", "headcount": "10", "work_area": "서울, 경기(북부)", "work_schedule": "일 1~3시간", "pay_text": "80~150만원 내외", "required_license": "요양보호사 자격증", "preferred_license": "", "required_exp_years": "", "age_note": "72세", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-14-1", "booth_no": "TBD-14", "company": "(주)더라이징스타헤딩", "job_title": "프리랜서 헤드헌터", "job_family": "ETC", "headcount": "5", "work_area": "서울 강남구, 금천구", "work_schedule": "탄력근무제", "pay_text": "", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "직무내용: 헤드헌터, HR채용, 인사채용", "status": "모집중"}, {"job_id": "TBD-15-1", "booth_no": "TBD-15", "company": "주식회사 레몬돌봄센터", "job_title": "서울형 및 공공사업 가사서비스 제공 가사관리사", "job_family": "CARE", "headcount": "10", "work_area": "서울 전지역 (거주지 인근 매칭)", "work_schedule": "탄력근무제", "pay_text": "시급 1.7만원 / 기본 3시간", "required_license": "", "preferred_license": "요양보호사;가사관리사자격증", "required_exp_years": "", "age_note": "", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-16-1", "booth_no": "TBD-16", "company": "마더앤베이비 산후도우미", "job_title": "산모신생아건강관리사", "job_family": "CARE", "headcount": "10", "work_area": "서울 전지역 (거주지 인근 매칭)", "work_schedule": "일 8시간 이상 / 9~18시", "pay_text": "일급 10만원~", "required_license": "산모신생아건강관리사 양성과정 수료(예정)", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-17-1", "booth_no": "TBD-17", "company": "서울농수산시장관리주식회사", "job_title": "건물시설관리 등", "job_family": "FAC", "headcount": "7", "work_area": "서울 강서구, 서초구, 송파구", "work_schedule": "", "pay_text": "", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "[확인필요] 원문에 \"직무기술서 미공개 - 현장 확인 필요\"로 명시됨", "status": "모집중"}, {"job_id": "TBD-18-1", "booth_no": "TBD-18", "company": "서울시120다산콜재단", "job_title": "상담", "job_family": "ADM", "headcount": "7", "work_area": "서울 동대문구", "work_schedule": "11시~20시", "pay_text": "240만원 이상", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 60세", "etc_note": "경력자 우대(연수 미기재). 직무내용: 전화상담 및 민원접수", "status": "모집중"}, {"job_id": "TBD-19-1", "booth_no": "TBD-19", "company": "선진버스(주)", "job_title": "선진버스 시내버스 운행사원", "job_family": "DRV", "headcount": "20", "work_area": "강화, 김포, 일산, 파주", "work_schedule": "일 8시간 이상 / 탄력근무제", "pay_text": "360만원 이상", "required_license": "1종 대형면허;버스운전자격증", "preferred_license": "", "required_exp_years": "", "age_note": "만 63세", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-20-1", "booth_no": "TBD-20", "company": "(주)세스코", "job_title": "세스코 서비스 어시스턴트(CSA)", "job_family": "FAC", "headcount": "10", "work_area": "수도권", "work_schedule": "일 8시간 이상", "pay_text": "회사내규 (연 4회 분기별 인센티브 별도 지급)", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 60세", "etc_note": "고졸 이상 학력, 운전 가능자 (자격증 항목 아님, 부스에서 확인)", "status": "모집중"}, {"job_id": "TBD-21-1", "booth_no": "TBD-21", "company": "(주)와이에스콘텐츠", "job_title": "시니어 강사", "job_family": "ETC", "headcount": "5", "work_area": "서울 강서구", "work_schedule": "일 1~3시간", "pay_text": "협의 가능", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "직무내용: 데이케어센터, 요양원 등 프로그램 강사", "status": "모집중"}, {"job_id": "TBD-22-1", "booth_no": "TBD-22", "company": "주식회사 우아한청년들", "job_title": "배민B마트 크루", "job_family": "DRV", "headcount": "10", "work_area": "서울 전지역", "work_schedule": "탄력근무제", "pay_text": "시급 1만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "동종업계 근무경험자 우대(자격증 아님). 직무내용: B마트 상품 집품 및 포장, 입고 진열, 지점 환경 정비", "status": "모집중"}, {"job_id": "TBD-23-1", "booth_no": "TBD-23", "company": "원더풀시니어", "job_title": "원더풀시니어(앱) 일자리 (중장년 일자리 정보 제공)", "job_family": "ETC", "headcount": "30", "work_area": "기관별 상이", "work_schedule": "", "pay_text": "", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "[확인필요] 일반 채용공고 형식이 아닌 일자리 정보 제공 서비스 소개로 보임. 원문 직무내용/자격사항/근무시간/급여/정년 모두 \"-\"로 표기됨", "status": "모집중"}, {"job_id": "TBD-24-1", "booth_no": "TBD-24", "company": "주식회사 유라이프", "job_title": "공동주택 생활서비스 (가사관리사/하우스키핑)", "job_family": "CARE", "headcount": "20", "work_area": "서울 전지역", "work_schedule": "일 4~7시간 / 9~17시(6시간) / 탄력근무제", "pay_text": "185만원", "required_license": "", "preferred_license": "가사서비스 교육 이수", "required_exp_years": "", "age_note": "", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-25-1", "booth_no": "TBD-25", "company": "(주)이지태스크", "job_title": "이루미", "job_family": "ADM", "headcount": "", "work_area": "재택근무", "work_schedule": "일 1~3시간 / 탄력근무제", "pay_text": "시급 1.1만원", "required_license": "", "preferred_license": "컴퓨터 관련 자격증(세부 미지정)", "required_exp_years": "", "age_note": "", "etc_note": "이루미·PM 합산 30명 채용(직무별 세부인원 미기재). 관련직무 경력자 우대(연수 미기재). 이루미: 실지 문서 등 작업자", "status": "모집중"}, {"job_id": "TBD-25-2", "booth_no": "TBD-25", "company": "(주)이지태스크", "job_title": "PM", "job_family": "ADM", "headcount": "", "work_area": "재택근무", "work_schedule": "일 1~3시간 / 탄력근무제", "pay_text": "시급 1.1만원", "required_license": "", "preferred_license": "컴퓨터 관련 자격증(세부 미지정)", "required_exp_years": "", "age_note": "", "etc_note": "이루미·PM 합산 30명 채용(직무별 세부인원 미기재). 관련직무 경력자 우대(연수 미기재). PM: project manager", "status": "모집중"}, {"job_id": "TBD-26-1", "booth_no": "TBD-26", "company": "주식회사 인바이트넷", "job_title": "HR담당자 (채용담당자/헤드헌팅)", "job_family": "ETC", "headcount": "3", "work_area": "서울 중구", "work_schedule": "일 8시간 이상", "pay_text": "230만원", "required_license": "", "preferred_license": "직업상담사;사회복지사", "required_exp_years": "", "age_note": "만 55세", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-27-1", "booth_no": "TBD-27", "company": "주식회사 잇그린", "job_title": "다회용기 세척센터 현장직 크루", "job_family": "PRD", "headcount": "3", "work_area": "서울 강남구, 충남(천안)", "work_schedule": "일 8시간 이상 / 8~17시", "pay_text": "연봉 2,700만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "생산직 혹은 세척업 경험 우대(자격증 아님). 직무내용: 다회용기 세척 및 품질관리, 세척센터 청결관리", "status": "모집중"}, {"job_id": "TBD-28-1", "booth_no": "TBD-28", "company": "주식회사 제광", "job_title": "아파트, 고정구역 비대면 소화물배송", "job_family": "DRV", "headcount": "8", "work_area": "수도권 (거주지 인근)", "work_schedule": "7시 30분~17시 30분", "pay_text": "412만원", "required_license": "", "preferred_license": "화물운송종사자자격증", "required_exp_years": "", "age_note": "", "etc_note": "최근 5년 이내 음주운전 등 운전결격사유 없어야 함(자격증 아님, 부스에서 확인)", "status": "모집중"}, {"job_id": "TBD-29-1", "booth_no": "TBD-29", "company": "주식회사 제이비", "job_title": "5톤 윙바디 화물차 기사", "job_family": "DRV", "headcount": "4", "work_area": "서울 전지역", "work_schedule": "일 8시간 이상 / 20시~10시", "pay_text": "800만원", "required_license": "1종 보통면허;1종 대형면허;화물차운송자격증", "preferred_license": "", "required_exp_years": "", "age_note": "만 70세", "etc_note": "[확인필요] 급여 단위(월급/연봉)가 원문에 명시되지 않음, 부스에서 확인 필요. 직무내용: 주거지 지역에서 대전까지 1회 순환 운전", "status": "모집중"}, {"job_id": "TBD-30-1", "booth_no": "TBD-30", "company": "(주)청연", "job_title": "플랫폼종사 청소매니저", "job_family": "FAC", "headcount": "20", "work_area": "수도권 전지역", "work_schedule": "자율(플랫폼활동) / 오전시작 8·9·10시, 오후시작 14·15·16시", "pay_text": "시급 1.2만원~2.5만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 74세", "etc_note": "가정방문 서비스 특성상 여성 인력 요청 비중이 높음(참고사항, 자격요건 아님)", "status": "모집중"}, {"job_id": "TBD-31-1", "booth_no": "TBD-31", "company": "(주)컴텍", "job_title": "보안 솔루션 개발자", "job_family": "TEC", "headcount": "", "work_area": "서울 동작구", "work_schedule": "일 8시간 이상 / 탄력근무제", "pay_text": "협의 가능", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 65세", "etc_note": "개발(보안솔루션) 유경험자 요구(연수 미기재). 개발자·영업사원 합산 3명 채용(직무별 세부인원 미기재)", "status": "모집중"}, {"job_id": "TBD-31-2", "booth_no": "TBD-31", "company": "(주)컴텍", "job_title": "영업사원", "job_family": "SAL", "headcount": "", "work_area": "서울 동작구", "work_schedule": "일 8시간 이상 / 탄력근무제", "pay_text": "협의 가능", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 65세", "etc_note": "솔루션 영업 유경험자 요구(연수 미기재). 개발자·영업사원 합산 3명 채용(직무별 세부인원 미기재)", "status": "모집중"}, {"job_id": "TBD-32-1", "booth_no": "TBD-32", "company": "케어링(주)", "job_title": "요양보호사", "job_family": "CARE", "headcount": "5", "work_area": "서울 도봉구, 성북구, 경기(의정부)", "work_schedule": "일 1~3시간", "pay_text": "시급 1.3만원", "required_license": "요양보호사 자격증", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "직무내용: 어르신 가정을 방문하여 신체 활동, 인지 활동, 일상생활, 말벗과 같은 정서적 지원 제공", "status": "모집중"}, {"job_id": "TBD-33-1", "booth_no": "TBD-33", "company": "코이카(KOICA)", "job_title": "KOICA 해외봉사단", "job_family": "ETC", "headcount": "200", "work_area": "KOICA 해외사무소 (아시아, 중앙아시아, 아프리카, 중남미)", "work_schedule": "탄력근무제", "pay_text": "월 생활비 ~690달러 / 주거비 ~600달러", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "직무내용: 정시지원 프로그램, 진로 및 자기계발 프로그램, 청소년 교육 등", "status": "모집중"}, {"job_id": "TBD-34-1", "booth_no": "TBD-34", "company": "쿠팡풀필먼트서비스(유)", "job_title": "쿠팡풀필먼트서비스 현장물류사원", "job_family": "DRV", "headcount": "100", "work_area": "경기(성남, 용인)", "work_schedule": "일 8시간 이상 / 8~17시 또는 17~2시", "pay_text": "230~330만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 60세", "etc_note": "직무내용: 단순 포장, 상품 검수 후 진열, 재고관리", "status": "모집중"}, {"job_id": "TBD-35-1", "booth_no": "TBD-35", "company": "주식회사 파파모빌리티", "job_title": "파파 크루 (드라이버)", "job_family": "DRV", "headcount": "30", "work_area": "서울 서초구", "work_schedule": "일 8시간 이상 / 4~13시 또는 13~22시", "pay_text": "266~290만원", "required_license": "1종 보통 또는 2종 보통 운전면허", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "범죄경력 조회 시 결격사유가 없어야 함(자격증 아님). 직무내용: B2B 및 호텔·공항 등 프리미엄 의전 서비스, 차량관리", "status": "모집중"}, {"job_id": "TBD-36-1", "booth_no": "TBD-36", "company": "주식회사 펫피플", "job_title": "반려동물 돌봄 전문가 펫시터", "job_family": "ETC", "headcount": "10", "work_area": "재택근무", "work_schedule": "탄력근무제", "pay_text": "100만원 (진행 건수에 따라 상이)", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "지원자 주거환경 조건(주거면적 50㎡ 이상, 상주견 2마리 이하, 홈캠/안전펜스 설치 필수) - 자격증 아님", "status": "모집중"}, {"job_id": "TBD-37-1", "booth_no": "TBD-37", "company": "피자느반", "job_title": "피자느반 매장 운영 및 피자 조리 직원", "job_family": "SAL", "headcount": "5", "work_area": "서울 강남구", "work_schedule": "일 8시간 이상 / 10~21시", "pay_text": "320만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 65세", "etc_note": "", "status": "모집중"}, {"job_id": "TBD-38-1", "booth_no": "TBD-38", "company": "(주)한국 교리츠 메인터넌스", "job_title": "호텔 레스토랑 조식 뷔페 조리사", "job_family": "SAL", "headcount": "1", "work_area": "서울 종로구", "work_schedule": "일 8시간 이상 / 5~14시 / 탄력근무제", "pay_text": "215~250만원", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "만 60세", "etc_note": "직무내용: 조리 및 호텔 조식 뷔페 레스토랑 업무 전반, 홀 서비스, 고객대응", "status": "모집중"}, {"job_id": "TBD-39-1", "booth_no": "TBD-39", "company": "한국디지털문해교육협회", "job_title": "스마트폰강사", "job_family": "ETC", "headcount": "", "work_area": "서울, 경기", "work_schedule": "탄력근무제", "pay_text": "3~4만원", "required_license": "", "preferred_license": "", "required_exp_years": "1", "age_note": "만 65세", "etc_note": "[확인필요] 급여 단위(시급/회당 등) 원문 불명확. 스마트폰강사·스마트폰AI활용강사·정보화강사 합산 5명 채용(직무별 세부인원 미기재)", "status": "모집중"}, {"job_id": "TBD-39-2", "booth_no": "TBD-39", "company": "한국디지털문해교육협회", "job_title": "스마트폰AI활용강사", "job_family": "ETC", "headcount": "", "work_area": "서울, 경기", "work_schedule": "탄력근무제", "pay_text": "3~4만원", "required_license": "", "preferred_license": "", "required_exp_years": "1", "age_note": "만 65세", "etc_note": "[확인필요] 급여 단위(시급/회당 등) 원문 불명확. 스마트폰강사·스마트폰AI활용강사·정보화강사 합산 5명 채용(직무별 세부인원 미기재)", "status": "모집중"}, {"job_id": "TBD-39-3", "booth_no": "TBD-39", "company": "한국디지털문해교육협회", "job_title": "정보화강사", "job_family": "ETC", "headcount": "", "work_area": "서울, 경기", "work_schedule": "탄력근무제", "pay_text": "3~4만원", "required_license": "", "preferred_license": "", "required_exp_years": "1", "age_note": "만 65세", "etc_note": "[확인필요] 급여 단위(시급/회당 등) 원문 불명확. 스마트폰강사·스마트폰AI활용강사·정보화강사 합산 5명 채용(직무별 세부인원 미기재)", "status": "모집중"}, {"job_id": "TBD-40-1", "booth_no": "TBD-40", "company": "한국앙코르커리어", "job_title": "평가·심사위원", "job_family": "ETC", "headcount": "", "work_area": "전국", "work_schedule": "탄력근무제", "pay_text": "기관별 상이", "required_license": "", "preferred_license": "", "required_exp_years": "7", "age_note": "", "etc_note": "별도 기준 확인 필요(원문 표기). 4개 역할 합산 10명 채용(역할별 세부인원 미기재). 직무내용: 공공/민간 분야 평가·심사위원, 자문위원, 컨설턴트, 창업멘토 활동", "status": "모집중"}, {"job_id": "TBD-40-2", "booth_no": "TBD-40", "company": "한국앙코르커리어", "job_title": "자문위원", "job_family": "ETC", "headcount": "", "work_area": "전국", "work_schedule": "탄력근무제", "pay_text": "기관별 상이", "required_license": "", "preferred_license": "", "required_exp_years": "7", "age_note": "", "etc_note": "별도 기준 확인 필요(원문 표기). 4개 역할 합산 10명 채용(역할별 세부인원 미기재). 직무내용: 공공/민간 분야 평가·심사위원, 자문위원, 컨설턴트, 창업멘토 활동", "status": "모집중"}, {"job_id": "TBD-40-3", "booth_no": "TBD-40", "company": "한국앙코르커리어", "job_title": "컨설턴트", "job_family": "ETC", "headcount": "", "work_area": "전국", "work_schedule": "탄력근무제", "pay_text": "기관별 상이", "required_license": "", "preferred_license": "", "required_exp_years": "7", "age_note": "", "etc_note": "별도 기준 확인 필요(원문 표기). 4개 역할 합산 10명 채용(역할별 세부인원 미기재). 직무내용: 공공/민간 분야 평가·심사위원, 자문위원, 컨설턴트, 창업멘토 활동", "status": "모집중"}, {"job_id": "TBD-40-4", "booth_no": "TBD-40", "company": "한국앙코르커리어", "job_title": "창업멘토", "job_family": "ETC", "headcount": "", "work_area": "전국", "work_schedule": "탄력근무제", "pay_text": "기관별 상이", "required_license": "", "preferred_license": "", "required_exp_years": "7", "age_note": "", "etc_note": "별도 기준 확인 필요(원문 표기). 4개 역할 합산 10명 채용(역할별 세부인원 미기재). 직무내용: 공공/민간 분야 평가·심사위원, 자문위원, 컨설턴트, 창업멘토 활동", "status": "모집중"}, {"job_id": "TBD-41-1", "booth_no": "TBD-41", "company": "한국위드케어협회", "job_title": "수도배관세척 관리사", "job_family": "FAC", "headcount": "10", "work_area": "서울 전지역", "work_schedule": "일 4~7시간", "pay_text": "", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "직무내용: 수도 / 보일러 배관세척", "status": "모집중"}, {"job_id": "TBD-42-1", "booth_no": "TBD-42", "company": "현대홈쇼핑", "job_title": "총무", "job_family": "ADM", "headcount": "5", "work_area": "전국", "work_schedule": "일 8시간 이상 / 9~18시", "pay_text": "200만원~", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "보험사 총무 경력 우대(연수 미기재, 자격증 아님). 직무내용: 보험 수납 및 계약 관련 서류작업", "status": "모집중"}, {"job_id": "TBD-43-1", "booth_no": "TBD-43", "company": "호텔인네트워크", "job_title": "호텔, 관광업종 직무", "job_family": "SAL", "headcount": "10", "work_area": "서울 위주", "work_schedule": "일 1~3시간, 일 4~7시간 / 탄력근무제", "pay_text": "최저시급", "required_license": "", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "외국어 가능 및 호텔·관광 경력 시 우대(자격증 아님). 직무내용: 홀서비스, 예약업무, 프론트, 룸메이드, 시설 등", "status": "모집중"}, {"job_id": "TBD-44-1", "booth_no": "TBD-44", "company": "노원구 가족센터", "job_title": "아이돌봄사", "job_family": "CARE", "headcount": "10", "work_area": "서울 노원구 (이용자 가정)", "work_schedule": "탄력근무제", "pay_text": "시급 1.1만원", "required_license": "아이돌봄 국가자격증", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "자격증 취득(예정)자 포함. 직무내용: 생후 3개월 이상~12세 이하 아동 돌봄서비스", "status": "모집중"}, {"job_id": "TBD-45-1", "booth_no": "TBD-45", "company": "성북구 가족센터", "job_title": "아이돌봄사", "job_family": "CARE", "headcount": "30", "work_area": "서울 성북구 (이용자 가정)", "work_schedule": "탄력근무제", "pay_text": "시급 1.1만원", "required_license": "아이돌봄 국가자격증", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "자격증 취득(예정)자 포함. 직무내용: 생후 3개월 이상~12세 이하 아동 돌봄서비스", "status": "모집중"}, {"job_id": "TBD-46-1", "booth_no": "TBD-46", "company": "종로구 가족센터", "job_title": "아이돌봄사", "job_family": "CARE", "headcount": "10", "work_area": "서울 종로구 (이용자 가정)", "work_schedule": "탄력근무제", "pay_text": "시급 1.1만원", "required_license": "아이돌봄 국가자격증", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "자격증 취득(예정)자 포함. 직무내용: 생후 3개월 이상~12세 이하 아동 돌봄서비스", "status": "모집중"}, {"job_id": "TBD-47-1", "booth_no": "TBD-47", "company": "중구 가족센터", "job_title": "아이돌봄사", "job_family": "CARE", "headcount": "30", "work_area": "서울 중구 (이용자 가정)", "work_schedule": "탄력근무제", "pay_text": "시급 1.1만원", "required_license": "아이돌봄 국가자격증", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "자격증 취득(예정)자 포함. 직무내용: 생후 3개월 이상~12세 이하 아동 돌봄서비스", "status": "모집중"}, {"job_id": "TBD-48-1", "booth_no": "TBD-48", "company": "중랑구 아이돌봄지원센터", "job_title": "아이돌봄사", "job_family": "CARE", "headcount": "30", "work_area": "서울 중랑구 (이용자 가정)", "work_schedule": "탄력근무제", "pay_text": "시급 1.1만원", "required_license": "아이돌봄 국가자격증", "preferred_license": "", "required_exp_years": "", "age_note": "", "etc_note": "자격증 취득(예정)자 포함. 직무내용: 생후 3개월 이상~12세 이하 아동 돌봄서비스", "status": "모집중"}];
+
+const FAMILY_LABEL = {FAC:'시설·경비', PRD:'생산·제조', ADM:'사무·행정', SAL:'판매·서비스',
+  DRV:'운전·배송', CARE:'사회복지·돌봄', TEC:'IT·기술', ETC:'기타'};
+
+function boothNum(b){ const m = /(\d+)/.exec(b||''); return m ? parseInt(m[1],10) : 9999; }
+JOBS.sort((a,b)=> boothNum(a.booth_no) - boothNum(b.booth_no));
+
+let activeFamily = '';
+
+function renderFamilyChips(){
+  const wrap = document.getElementById('familyScroll');
+  const families = ['전체', ...Object.keys(FAMILY_LABEL)];
+  wrap.innerHTML = families.map(f=>{
+    const label = f === '전체' ? '전체' : FAMILY_LABEL[f];
+    const val = f === '전체' ? '' : f;
+    const active = activeFamily === val ? 'active' : '';
+    return `<button type="button" class="chip ${active}" data-fam="${val}">${label}</button>`;
+  }).join('');
+  wrap.querySelectorAll('.chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeFamily = btn.dataset.fam;
+      renderFamilyChips();
+      render();
+    });
+  });
+}
+
+function esc(s){
+  return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function cardHTML(job){
+  const closed = job.status === '당일마감';
+  const badge = closed ? '<span class="badge closed">당일마감</span>' : '<span class="badge ok">모집중</span>';
+  return `
+  <div class="card" data-id="${job.job_id}">
+    <div class="card-head">
+      <div class="booth">${boothNum(job.booth_no)}<small>연번</small></div>
+      <div class="card-main">
+        <div class="company">${esc(job.company) || '정보없음'}</div>
+        <div class="jobtitle">${esc(job.job_title) || '정보없음'}</div>
+        <div class="meta-row">
+          <span>${esc(job.work_area) || '정보없음'}</span>
+          <span>·</span>
+          <span>${esc(job.pay_text) || '정보없음'}</span>
+          <span>${badge}</span>
+        </div>
+      </div>
+      <div class="chevron">▾</div>
+    </div>
+    <div class="detail">
+      <dl>
+        <dt>직무군</dt><dd>${FAMILY_LABEL[job.job_family] || '정보없음'}</dd>
+        <dt>채용인원</dt><dd>${esc(job.headcount) || '정보없음'}</dd>
+        <dt>근무시간</dt><dd>${esc(job.work_schedule) || '정보없음'}</dd>
+        <dt>필수자격</dt><dd>${esc(job.required_license) || '정보없음'}</dd>
+        <dt>우대자격</dt><dd>${esc(job.preferred_license) || '정보없음'}</dd>
+        <dt>필수경력</dt><dd>${job.required_exp_years ? esc(job.required_exp_years) + '년' : '정보없음'}</dd>
+        <dt>정년/연령</dt><dd>${esc(job.age_note) || '정보없음'}</dd>
+      </dl>
+      ${job.etc_note ? `<div class="note">${esc(job.etc_note)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+let openId = null;
+
+function render(){
+  const q = document.getElementById('q').value.trim();
+  let matches = JOBS.filter(j => !activeFamily || j.job_family === activeFamily);
+  if(q){
+    matches = matches.filter(j => (j.company||'').includes(q) || (j.job_title||'').includes(q));
+  }
+  document.getElementById('count').textContent = matches.length;
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty');
+  if(matches.length === 0){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = matches.map(cardHTML).join('');
+  if(openId){
+    const el = list.querySelector(`[data-id="${CSS.escape(openId)}"]`);
+    if(el) el.classList.add('open');
+  }
+  list.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const id = card.dataset.id;
+      const wasOpen = card.classList.contains('open');
+      list.querySelectorAll('.card.open').forEach(c=>c.classList.remove('open'));
+      if(!wasOpen){ card.classList.add('open'); openId = id; }
+      else { openId = null; }
+    });
+  });
+}
+
+document.getElementById('q').addEventListener('input', render);
+renderFamilyChips();
+render();
+</script>
