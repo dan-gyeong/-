@@ -114,6 +114,37 @@
     padding:10px 12px; font-size:13px; color:var(--muted); margin-bottom:14px;
   }
 
+  .program{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    margin-bottom:14px; overflow:hidden;
+  }
+  .program summary{
+    list-style:none; cursor:pointer; padding:13px 14px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:"Gothic A1",sans-serif; font-weight:700; font-size:15px; color:var(--text);
+  }
+  .program summary::-webkit-details-marker{display:none;}
+  .program summary .arrow{color:var(--muted); font-size:13px; transition:transform .15s ease;}
+  .program[open] summary .arrow{transform:rotate(180deg);}
+  .program-body{padding:0 14px 14px;}
+  .floor-group{margin-top:12px;}
+  .floor-group:first-child{margin-top:0;}
+  .floor-label{
+    font-family:"Gothic A1",sans-serif; font-weight:800; font-size:13px;
+    color:var(--accent-dark); letter-spacing:.04em; margin-bottom:6px;
+  }
+  .prog-row{padding:8px 0; border-top:1px solid var(--border);}
+  .floor-group .prog-row:first-of-type{border-top:none;}
+  .prog-row.highlight{background:var(--accent-tint); border-radius:8px; padding:8px 8px; border-top:none; margin-top:4px;}
+  .prog-row-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
+  .prog-zone{font-weight:700; font-size:14px; color:var(--text);}
+  .prog-time{
+    font-size:11.5px; font-weight:700; color:var(--accent-dark);
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .prog-desc{font-size:13.5px; color:var(--muted); margin-top:3px; white-space:pre-line;}
+  .prog-row.highlight .prog-desc{color:var(--text);}
+
   .card-list{display:flex; flex-direction:column; gap:10px;}
   .card{
     background:var(--surface); border:1px solid var(--border); border-radius:14px;
@@ -180,6 +211,55 @@
 <div class="family-scroll" id="familyScroll"></div>
 
 <main>
+  <details class="program">
+    <summary>📅 오늘의 행사 프로그램 (B1F·1F·2F)<span class="arrow">▾</span></summary>
+    <div class="program-body">
+      <div class="floor-group">
+        <div class="floor-label">B1F</div>
+        <div class="prog-row">
+          <div class="prog-row-head"><span class="prog-zone">채용관</span><span class="prog-time">10:00~17:00</span></div>
+          <div class="prog-desc">채용기업(31개사) 채용 상담·면접</div>
+        </div>
+        <div class="prog-row">
+          <div class="prog-row-head"><span class="prog-zone">지원관</span><span class="prog-time">10:00~17:00</span></div>
+          <div class="prog-desc">중장년 지원기관(9개사) 상담·안내</div>
+        </div>
+        <div class="prog-row">
+          <div class="prog-row-head"><span class="prog-zone">체험관</span><span class="prog-time">10:00~17:00</span></div>
+          <div class="prog-desc">- 이력서 사진촬영
+- 퍼스널 컬러 컨설팅
+- [체크온] AI 인적성 검사 체험</div>
+        </div>
+        <div class="prog-row highlight">
+          <div class="prog-row-head"><span class="prog-zone">채용설명회</span><span class="prog-time">10:30~11:30</span></div>
+          <div class="prog-desc">[펫피플] 반려동물 돌봄 전문가 펫시터</div>
+        </div>
+        <div class="prog-row highlight">
+          <div class="prog-row-head"><span class="prog-zone">취업 특강</span><span class="prog-time">14:00~16:00</span></div>
+          <div class="prog-desc">조경산업과 중장년 커리어 설계</div>
+        </div>
+      </div>
+      <div class="floor-group">
+        <div class="floor-label">1F</div>
+        <div class="prog-row">
+          <div class="prog-row-head"><span class="prog-zone">채용관</span><span class="prog-time">10:00~17:00</span></div>
+          <div class="prog-desc">채용기업(20개사) 채용 상담·면접</div>
+        </div>
+        <div class="prog-row">
+          <div class="prog-row-head"><span class="prog-zone">상담관</span><span class="prog-time">10:00~17:00</span></div>
+          <div class="prog-desc">1:1 진로 및 취업 상담</div>
+        </div>
+      </div>
+      <div class="floor-group">
+        <div class="floor-label">2F</div>
+        <div class="prog-row">
+          <div class="prog-row-head"><span class="prog-zone">체험관</span><span class="prog-time">10:00~17:00</span></div>
+          <div class="prog-desc">건강몽땅 ON:DAY</div>
+        </div>
+      </div>
+    </div>
+  </details>
+
   <div class="disclaimer">부스 배치도는 현장 안내판에서 확인하세요. 여기 번호는 안내문 기준 <strong>연번</strong>이며, 모집 상태는 현장에서 바뀔 수 있습니다.</div>
   <div class="status-line"><span>검색 결과</span><span><strong id="count">0</strong>건</span></div>
   <div class="card-list" id="list"></div>
