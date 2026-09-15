@@ -421,9 +421,8 @@ const SEOUL_GU = ['종로구','중구','용산구','성동구','광진구','동�
   '관악구','서초구','강남구','송파구','강동구'];
 
 const JOB_FAMILIES = [
-  {code:'EDU', label:'교육·서비스업'}, {code:'CARE', label:'돌봄·요양'}, {code:'ADM', label:'사무·행정'},
-  {code:'OPS', label:'운영지원'}, {code:'SAL', label:'영업·마케팅'}, {code:'LOG', label:'운송·물류·제조'},
-  {code:'CLN', label:'조리·청소'}
+  {code:'EDU', label:'교육·서비스업'}, {code:'CARE', label:'돌봄·요양'}, {code:'ADM', label:'사무·행정·운영지원'},
+  {code:'SAL', label:'영업·마케팅'}, {code:'LOG', label:'운송·물류·제조'}, {code:'CLN', label:'조리·청소'}
 ];
 function familyLabel(code){ const f=JOB_FAMILIES.find(x=>x.code===code); return f? f.label : code; }
 
