@@ -256,7 +256,7 @@ function esc(s){
 
 function cardHTML(job){
   const closed = job.status === '당일마감';
-  const badge = closed ? '<span class="badge closed">당일마감</span>' : '<span class="badge ok">모집중</span>';
+  const badge = closed ? '<span class="badge closed">당일마감</span>' : '';
   return `
   <div class="card" data-id="${job.job_id}">
     <div class="card-head">
@@ -268,7 +268,7 @@ function cardHTML(job){
           <span>${esc(job.work_area) || '정보없음'}</span>
           <span>·</span>
           <span>${esc(job.pay_text) || '정보없음'}</span>
-          <span>${badge}</span>
+          ${badge}
         </div>
       </div>
       <div class="chevron">▾</div>
