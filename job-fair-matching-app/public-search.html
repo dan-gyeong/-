@@ -230,9 +230,6 @@ const JOBS = [{"job_id": "1-1", "booth_no": "D18", "company": "(AAA)아이미래
 const FAMILY_LABEL = {'조리·돌봄·시설관리':'조리·돌봄·시설관리', '사무·행정·운영지원':'사무·행정·운영지원',
   '교육·서비스·영업':'교육·서비스·영업', '운송·물류·제조':'운송·물류·제조'};
 
-function boothNum(b){ const m = /(\d+)/.exec(b||''); return m ? parseInt(m[1],10) : 9999; }
-JOBS.sort((a,b)=> boothNum(a.booth_no) - boothNum(b.booth_no));
-
 let activeFamily = '';
 
 function renderFamilyChips(){
