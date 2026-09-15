@@ -209,7 +209,6 @@
   </div>
 </div>
 <div class="family-scroll" id="familyScroll"></div>
-<div class="family-scroll" id="floorScroll" style="padding-top:6px;"></div>
 
 <main>
   <div class="pending-notice" style="background:#FFF6E5; border:1px solid #F2C94C; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13.5px; color:#7A5B00; line-height:1.5;">
@@ -233,14 +232,13 @@
 <script>
 const JOBS = [];
 
-const FAMILY_LABEL = {FAC:'시설·경비', PRD:'생산·제조', ADM:'사무·행정', SAL:'판매·서비스',
-  DRV:'운전·배송', CARE:'사회복지·돌봄', TEC:'IT·기술', ETC:'기타'};
+const FAMILY_LABEL = {EDU:'교육·서비스업', CARE:'돌봄·요양', ADM:'사무·행정', OPS:'운영지원',
+  SAL:'영업·마케팅', LOG:'운송·물류·제조', CLN:'조리·청소'};
 
 function boothNum(b){ const m = /(\d+)/.exec(b||''); return m ? parseInt(m[1],10) : 9999; }
 JOBS.sort((a,b)=> boothNum(a.booth_no) - boothNum(b.booth_no));
 
 let activeFamily = '';
-let activeFloor = '';
 
 function renderFamilyChips(){
   const wrap = document.getElementById('familyScroll');
@@ -260,23 +258,6 @@ function renderFamilyChips(){
   });
 }
 
-function renderFloorChips(){
-  const wrap = document.getElementById('floorScroll');
-  const floors = ['전체', '1층', '지하1층'];
-  wrap.innerHTML = floors.map(f=>{
-    const val = f === '전체' ? '' : f;
-    const active = activeFloor === val ? 'active' : '';
-    return `<button type="button" class="chip ${active}" data-floor="${val}">${f}</button>`;
-  }).join('');
-  wrap.querySelectorAll('.chip').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      activeFloor = btn.dataset.floor;
-      renderFloorChips();
-      render();
-    });
-  });
-}
-
 function esc(s){
   return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
@@ -287,7 +268,7 @@ function cardHTML(job){
   return `
   <div class="card" data-id="${job.job_id}">
     <div class="card-head">
-      <div class="booth">${esc(job.booth_no)}<small>${esc(job.floor) || '부스'}</small></div>
+      <div class="booth">${esc(job.booth_no)}</div>
       <div class="card-main">
         <div class="company">${esc(job.company) || '정보없음'}</div>
         <div class="jobtitle">${esc(job.job_title) || '정보없음'}</div>
@@ -302,7 +283,7 @@ function cardHTML(job){
     </div>
     <div class="detail">
       <dl>
-        <dt>위치</dt><dd>${esc(job.floor) || '정보없음'} ${esc(job.booth_no) || ''}번 부스</dd>
+        <dt>위치</dt><dd>${esc(job.booth_no) || '정보없음'}번 부스</dd>
         <dt>직무군</dt><dd>${FAMILY_LABEL[job.job_family] || '정보없음'}</dd>
         <dt>채용인원</dt><dd>${esc(job.headcount) || '정보없음'}</dd>
         <dt>근무시간</dt><dd>${esc(job.work_schedule) || '정보없음'}</dd>
@@ -323,7 +304,6 @@ let openId = null;
 function render(){
   const q = document.getElementById('q').value.trim();
   let matches = JOBS.filter(j => !activeFamily || j.job_family === activeFamily);
-  matches = matches.filter(j => !activeFloor || j.floor === activeFloor);
   if(q){
     matches = matches.filter(j => (j.company||'').includes(q) || (j.job_title||'').includes(q));
   }
@@ -354,6 +334,5 @@ function render(){
 
 document.getElementById('q').addEventListener('input', render);
 renderFamilyChips();
-renderFloorChips();
 render();
 </script>
