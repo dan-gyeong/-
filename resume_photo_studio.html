@@ -98,6 +98,18 @@
 
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
 
+            <!-- Gemini API 설정 (키는 이 브라우저의 localStorage에만 저장됨) -->
+            <div class="md:col-span-2 glass-panel rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label for="apiKeyInput" class="block text-xs font-semibold text-slate-600 mb-1"><i class="fa-solid fa-key text-slate-500 mr-1"></i> Gemini API 키 (이 브라우저에만 저장)</label>
+                    <input id="apiKeyInput" type="password" autocomplete="off" placeholder="API 키 입력" class="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label for="modelInput" class="block text-xs font-semibold text-slate-600 mb-1"><i class="fa-solid fa-microchip text-slate-500 mr-1"></i> 이미지 모델명 (Google AI Studio에서 확인)</label>
+                    <input id="modelInput" type="text" placeholder="모델명 입력" class="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+            </div>
+
             <!-- Step 1: Camera Section -->
             <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
                 <div class="w-full flex items-center justify-between mb-3">
@@ -817,13 +829,20 @@
                 }
             };
 
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+            const apiKey = apiKeyInput.value.trim();
+            const modelName = modelInput.value.trim();
+            if (!apiKey || !modelName) {
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                showError("상단에 Gemini API 키와 모델명을 입력해주세요.");
+                return;
+            }
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent`;
 
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
                     body: JSON.stringify(payload)
                 });
 
