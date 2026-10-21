@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 이력서 사진 생성기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- QR Code generation library (QRCode.js) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 28px;
+            height: 28px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Optimized compact viewfinder guide */
+        .viewfinder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 55%;
+            height: 72%;
+            border: 2px dashed rgba(255, 255, 255, 0.85);
+            border-radius: 90px 90px 70px 70px;
+            pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+        }
+        .viewfinder::after {
+            content: '';
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-white shadow-sm p-4 sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-md shadow-blue-200">
+                    <i class="fa-solid fa-camera-retro text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">AI 이력서 사진 스튜디오</h1>
+                    <p class="text-xs text-slate-500">카메라로 3장을 촬영하고 완벽한 증명사진을 만들어보세요</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl text-xs font-semibold border border-blue-100">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> 정장·미소·헤어 완벽 변환
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-5xl mx-auto p-4 md:p-6 flex flex-col items-center">
+
+        <!-- 안내 배너 -->
+        <div class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-2xl shadow-md mb-6 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-3 rounded-xl">
+                    <i class="fa-solid fa-face-smile text-2xl text-amber-300"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-sm md:text-base">📸 3장 연속 촬영으로 가장 잘 나온 사진을 선택하세요!</h2>
+                    <p class="text-xs text-blue-100 mt-0.5">AI가 <strong>정장 복장</strong>, <strong>자연스러운 미소</strong>, <strong>단정한 헤어 스타일</strong>로 완벽하게 변환해 드립니다.</p>
+                </div>
+            </div>
+            <div class="text-xs bg-black/20 px-3 py-1.5 rounded-lg whitespace-nowrap">
+                Step 1. 3장 촬영 ➔ Step 2. AI 변환
+            </div>
+        </div>
+
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Step 1: Camera Section -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between">
+                <div class="w-full flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-semibold text-slate-700 flex items-center gap-2">
+                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm">Step 1</span> 3장 촬영하기
+                    </h2>
+                    <button id="switchCameraBtn" class="text-slate-500 hover:text-blue-600 transition p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm flex items-center gap-1.5" title="카메라 전환">
+                        <i class="fa-solid fa-rotate"></i> 전환
+                    </button>
+                </div>
+
+                <!-- 상단 3장 촬영 버튼 -->
+                <div id="cameraControls" class="w-full mb-3">
+                    <button id="captureBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-blue-200 text-sm md:text-base">
+                        <i class="fa-solid fa-camera"></i> 5초 타이머로 3장 연속 촬영하기
+                    </button>
+                </div>
+
+                <!-- 컴팩트 카메라 미리보기 컨테이너 -->
+                <div class="relative w-full max-w-sm mx-auto aspect-[4/5] bg-slate-900 rounded-xl overflow-hidden shadow-inner flex items-center justify-center mb-3">
+                    <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+
+                    <!-- Guideline overlay -->
+                    <div class="viewfinder">
+                        <div class="absolute -top-7 left-1/2 -translate-x-1/2 text-white text-[11px] whitespace-nowrap opacity-90 bg-black/60 px-2.5 py-1 rounded-full shadow">얼굴을 타원 안에 맞춰주세요</div>
+                    </div>
+
+                    <!-- 5-Second Countdown Overlay -->
+                    <div id="countdownOverlay" class="hidden absolute inset-0 bg-black/50 backdrop-blur-[2px] flex flex-col items-center justify-center z-20 pointer-events-none">
+                        <span id="countdownNumber" class="text-white text-8xl font-extrabold drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] animate-ping" style="animation-duration: 1s;">5</span>
+                        <div class="mt-3 bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-full shadow-lg" id="shotCountBadge">
+                            촬영 준비중...
+                        </div>
+                        <p class="text-white font-medium text-xs mt-2 bg-black/70 px-3 py-1 rounded-full shadow">정면을 보고 미소 지어주세요 😊</p>
+                    </div>
+
+                    <!-- Camera Flash Effect -->
+                    <div id="flashOverlay" class="hidden absolute inset-0 bg-white z-30 pointer-events-none transition-opacity duration-300 opacity-0"></div>
+                </div>
+
+                <!-- 3장 촬영된 결과물 썸네일 선택 영역 -->
+                <div id="capturedShotsContainer" class="hidden w-full mb-3 bg-slate-100 p-3 rounded-xl border border-slate-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-images text-blue-600 mr-1"></i> 촬영된 3장 중 대표 사진을 선택하세요</span>
+                        <span class="text-[11px] text-blue-600 font-semibold" id="selectedShotIndexText">1번 선택됨</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2" id="shotsThumbnails">
+                        <!-- JS injected thumbnails -->
+                    </div>
+                </div>
+
+                <!-- 카메라 빛 번짐/노출 제어 슬라이더 패널 -->
+                <div id="exposurePanel" class="w-full bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-3 text-xs flex flex-col gap-2">
+                    <div class="flex items-center justify-between text-slate-600 font-semibold">
+                        <span><i class="fa-solid fa-sliders text-blue-500 mr-1"></i> 화면 밝기 및 대비 조절 (빛 번짐 제어)</span>
+                        <button type="button" id="resetExposureBtn" class="text-[11px] text-blue-600 hover:underline">초기화</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 px-1">
+                        <div>
+                            <div class="flex justify-between text-[11px] text-slate-500 mb-1">
+                                <span>밝기 (Brightness)</span>
+                                <span id="brightnessVal">100%</span>
+                            </div>
+                            <input type="range" id="brightnessRange" min="50" max="150" value="100" class="w-full accent-blue-600 cursor-pointer">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[11px] text-slate-500 mb-1">
+                                <span>대비 (Contrast)</span>
+                                <span id="contrastVal">100%</span>
+                            </div>
+                            <input type="range" id="contrastRange" min="50" max="150" value="100" class="w-full accent-blue-600 cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 옵션 패널 (추천 프리셋, 필터, 정장 세부 설정, 배경, 프레임) -->
+                <div id="optionsPanel" class="w-full flex flex-col gap-3 mb-4 hidden text-left px-1">
+
+                    <!-- 추천 사진 조합 (원클릭 프리셋) -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-xl border border-blue-100">
+                        <label class="block text-xs font-bold text-blue-800 mb-2">
+                            <i class="fa-solid fa-star text-amber-400 mr-1"></i> 원클릭 추천 사진 조합
+                        </label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button type="button" class="preset-btn text-xs py-2 px-2.5 bg-white hover:bg-blue-600 hover:text-white text-slate-700 rounded-lg border border-blue-200 font-medium transition flex items-center justify-center gap-1 shadow-sm" data-preset="standard">
+                                ✨ 대기업/공기업 정석
+                            </button>
+                            <button type="button" class="preset-btn text-xs py-2 px-2.5 bg-white hover:bg-blue-600 hover:text-white text-slate-700 rounded-lg border border-blue-200 font-medium transition flex items-center justify-center gap-1 shadow-sm" data-preset="startup">
+                                💡 IT/스타트업 추천
+                            </button>
+                            <button type="button" class="preset-btn text-xs py-2 px-2.5 bg-white hover:bg-blue-600 hover:text-white text-slate-700 rounded-lg border border-blue-200 font-medium transition flex items-center justify-center gap-1 shadow-sm" data-preset="passport">
+                                🪪 깔끔 여권/주민등록
+                            </button>
+                            <button type="button" class="preset-btn text-xs py-2 px-2.5 bg-white hover:bg-blue-600 hover:text-white text-slate-700 rounded-lg border border-blue-200 font-medium transition flex items-center justify-center gap-1 shadow-sm" data-preset="warm">
+                                ☕ 부드러운 호감형
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1"><i class="fa-solid fa-palette text-blue-500 mr-1"></i> AI 필터 스타일 (12종)</label>
+                        <select id="filterSelect" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <optgroup label="💼 비즈니스 & 증명사진">
+                                <option value="resume">💼 정장 (기본 증명사진) - 정장·미소·헤어 자동 변환</option>
+                                <option value="casual">👔 비즈니스 캐주얼 (자연스러운 프로필)</option>
+                                <option value="ceo">🏢 CEO/임원 프로필 (중후한 리더십)</option>
+                                <option value="medical">🥼 전문가 가운 (의료/연구직 프로필)</option>
+                                <option value="creative">🎨 크리에이티브 디렉터 (감각적/트렌디)</option>
+                            </optgroup>
+                            <optgroup label="📸 스튜디오 & 화보 컨셉">
+                                <option value="bw_profile">🖤 흑백 무드 (아티스트/배우 프로필)</option>
+                                <option value="vintage_film">🎞️ 90년대 레트로 필름 (아날로그 감성)</option>
+                                <option value="cinematic">🎬 시네마틱 (영화 포스터 느낌)</option>
+                            </optgroup>
+                            <optgroup label="✨ 아트 & 일러스트">
+                                <option value="pixar_3d">🧸 3D 애니메이션 (픽사/디즈니 캐릭터)</option>
+                                <option value="anime">🌸 웹툰/애니메이션 (순정/청춘 만화풍)</option>
+                                <option value="watercolor">🖌️ 수채화 (감성 아트 초상화)</option>
+                                <option value="cyberpunk">🤖 사이버펑크 (SF 네온 스타일)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- 정장 및 배경 세부 옵션 -->
+                    <div id="detailOptions" class="grid grid-cols-1 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div id="suitOptions" class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1"><i class="fa-solid fa-shirt text-slate-500 mr-1"></i> 정장 색상</label>
+                                <select id="suitColorSelect" class="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="navy">네이비 (신뢰감/추천)</option>
+                                    <option value="charcoal">차콜 그레이 (세련됨)</option>
+                                    <option value="black">블랙 (깔끔함/정석)</option>
+                                    <option value="beige">베이지 (부드러운 인상)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1"><i class="fa-solid fa-user-tie text-slate-500 mr-1"></i> 넥타이 / 이너</label>
+                                <select id="tieSelect" class="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="tie_blue">블루 계열 넥타이</option>
+                                    <option value="tie_red">버건디/와인 넥타이</option>
+                                    <option value="no_tie">노타이 (깔끔한 셔츠/블라우스)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1.5"><i class="fa-solid fa-fill-drip text-slate-500 mr-1"></i> 배경 색상</label>
+                            <div class="grid grid-cols-4 gap-1.5">
+                                <button type="button" class="bg-btn py-1.5 px-2 text-xs rounded-lg border-2 border-blue-500 bg-blue-50 text-blue-800 font-medium flex items-center justify-center gap-1" data-bg="blue">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-300 border border-blue-400"></span> 블루톤
+                                </button>
+                                <button type="button" class="bg-btn py-1.5 px-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-600 font-medium flex items-center justify-center gap-1 hover:bg-slate-50" data-bg="white">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-white border border-slate-300"></span> 순백색
+                                </button>
+                                <button type="button" class="bg-btn py-1.5 px-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-600 font-medium flex items-center justify-center gap-1 hover:bg-slate-50" data-bg="gray">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300 border border-slate-400"></span> 그레이
+                                </button>
+                                <button type="button" class="bg-btn py-1.5 px-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-600 font-medium flex items-center justify-center gap-1 hover:bg-slate-50" data-bg="beige">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-100 border border-amber-300"></span> 웜베이지
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1"><i class="fa-solid fa-crop-simple text-blue-500 mr-1"></i> 프레임 비율 (6종)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" class="frame-btn py-2 px-1 text-xs border-2 border-blue-500 bg-blue-50 text-blue-700 rounded-xl font-medium transition" data-ratio="3:4">3:4<br><span class="text-[10px] font-normal">증명/여권</span></button>
+                            <button type="button" class="frame-btn py-2 px-1 text-xs border border-slate-200 bg-white text-slate-600 rounded-xl font-medium transition hover:bg-slate-50" data-ratio="4:5">4:5<br><span class="text-[10px] font-normal">인스타 피드</span></button>
+                            <button type="button" class="frame-btn py-2 px-1 text-xs border border-slate-200 bg-white text-slate-600 rounded-xl font-medium transition hover:bg-slate-50" data-ratio="1:1">1:1<br><span class="text-[10px] font-normal">SNS 프로필</span></button>
+                            <button type="button" class="frame-btn py-2 px-1 text-xs border border-slate-200 bg-white text-slate-600 rounded-xl font-medium transition hover:bg-slate-50" data-ratio="4:3">4:3<br><span class="text-[10px] font-normal">스탠다드 가로</span></button>
+                            <button type="button" class="frame-btn py-2 px-1 text-xs border border-slate-200 bg-white text-slate-600 rounded-xl font-medium transition hover:bg-slate-50" data-ratio="16:9">16:9<br><span class="text-[10px] font-normal">와이드 배너</span></button>
+                            <button type="button" class="frame-btn py-2 px-1 text-xs border border-slate-200 bg-white text-slate-600 rounded-xl font-medium transition hover:bg-slate-50" data-ratio="9:16">9:16<br><span class="text-[10px] font-normal">릴스/스토리</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="previewControls" class="w-full flex gap-3 hidden">
+                    <button id="retakeBtn" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> 다시 촬영하기
+                    </button>
+                    <button id="generateBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI 이력서 사진 변환
+                    </button>
+                </div>
+
+                <!-- Hidden canvas -->
+                <canvas id="snapshotCanvas" class="hidden"></canvas>
+            </div>
+
+            <!-- Step 2: Result Section -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden">
+                <div class="w-full flex items-center mb-3">
+                    <h2 class="text-lg font-semibold text-slate-700 flex items-center gap-2">
+                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md text-sm">Step 2</span> AI 변환 결과
+                    </h2>
+                </div>
+
+                <!-- Initial Empty State -->
+                <div id="emptyState" class="flex-grow flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 min-h-[380px] p-6 text-center">
+                    <div class="bg-indigo-50 text-indigo-600 p-4 rounded-full mb-3 shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles text-3xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-700 mb-1">카메라로 3장을 촬영해 보세요</p>
+                    <p class="text-xs text-slate-500 max-w-xs">AI가 정장 복장, 자연스러운 미소, 단정한 헤어스타일로 완벽하게 변환해 드립니다.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-2xl p-6 text-center">
+                    <div class="loader mb-4 w-12 h-12 border-4 border-indigo-200 border-t-indigo-600"></div>
+                    <p class="text-indigo-900 font-bold text-base mb-1">✨ AI가 증명사진을 생성하고 있습니다</p>
+                    <p class="text-slate-600 text-xs mb-3">정장 합성과 자연스러운 미소, 헤어 스타일링 반영 중...</p>
+                    <div class="w-48 bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full w-2/3 animate-pulse"></div>
+                    </div>
+                </div>
+
+                <!-- Result Image State -->
+                <div id="resultState" class="hidden flex-grow flex flex-col items-center justify-between">
+                    <div id="resultImageContainer" class="w-full max-w-sm mx-auto bg-slate-100 rounded-xl overflow-hidden shadow-md mb-3 flex items-center justify-center relative group" style="aspect-ratio: 3/4;">
+                        <img id="resultImage" class="w-full h-full object-cover" alt="AI 생성 이력서 사진">
+                    </div>
+
+                    <div class="w-full flex flex-col gap-2">
+                        <button id="downloadBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
+                            <i class="fa-solid fa-download"></i> 사진 다운로드
+                        </button>
+                        <button id="showQrBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-qrcode"></i> 모바일 브라우저 연결 QR 생성
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- QR Modal -->
+        <div id="qrModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full flex flex-col items-center text-center shadow-2xl">
+                <h3 class="text-lg font-bold text-slate-800 mb-1">모바일 브라우저 즉시 열기</h3>
+                <p class="text-xs text-slate-500 mb-4">스마트폰 기본 카메라로 QR을 스캔하면 사파리·크롬 브라우저로 페이지가 즉시 열립니다.</p>
+
+                <div id="qrcode" class="p-3 bg-white border border-slate-200 rounded-xl mb-4 flex justify-center"></div>
+
+                <p id="qrUrlText" class="text-[11px] text-slate-400 break-all mb-4 px-2"></p>
+
+                <button id="closeQrModal" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 rounded-xl text-sm transition">
+                    닫기
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Message Box -->
+        <div id="errorBox" class="hidden mt-6 w-full max-w-lg bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+            에러 메세지
+        </div>
+    </main>
+
+    <script>
+        // DOM Elements
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('snapshotCanvas');
+
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const showQrBtn = document.getElementById('showQrBtn');
+        const qrModal = document.getElementById('qrModal');
+        const closeQrModal = document.getElementById('closeQrModal');
+        const qrcodeContainer = document.getElementById('qrcode');
+        const qrUrlText = document.getElementById('qrUrlText');
+
+        const cameraControls = document.getElementById('cameraControls');
+        const previewControls = document.getElementById('previewControls');
+        const exposurePanel = document.getElementById('exposurePanel');
+        const brightnessRange = document.getElementById('brightnessRange');
+        const contrastRange = document.getElementById('contrastRange');
+        const brightnessVal = document.getElementById('brightnessVal');
+        const contrastVal = document.getElementById('contrastVal');
+        const resetExposureBtn = document.getElementById('resetExposureBtn');
+
+        const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+        const resultState = document.getElementById('resultState');
+        const resultImage = document.getElementById('resultImage');
+        const resultImageContainer = document.getElementById('resultImageContainer');
+        const errorBox = document.getElementById('errorBox');
+        const optionsPanel = document.getElementById('optionsPanel');
+        const frameBtns = document.querySelectorAll('.frame-btn');
+        const bgBtns = document.querySelectorAll('.bg-btn');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const filterSelect = document.getElementById('filterSelect');
+        const suitColorSelect = document.getElementById('suitColorSelect');
+        const tieSelect = document.getElementById('tieSelect');
+        const detailOptions = document.getElementById('detailOptions');
+        const suitOptions = document.getElementById('suitOptions');
+        const countdownOverlay = document.getElementById('countdownOverlay');
+        const countdownNumber = document.getElementById('countdownNumber');
+        const shotCountBadge = document.getElementById('shotCountBadge');
+        const flashOverlay = document.getElementById('flashOverlay');
+
+        const capturedShotsContainer = document.getElementById('capturedShotsContainer');
+        const shotsThumbnails = document.getElementById('shotsThumbnails');
+        const selectedShotIndexText = document.getElementById('selectedShotIndexText');
+
+        let currentStream = null;
+        let useFrontCamera = true;
+        let capturedShots = []; // Store 3 captured base64 images
+        let selectedShotIndex = 0; // Currently selected representative shot
+        let selectedRatio = '3:4';
+        let selectedBg = 'blue';
+        let countdownTimer = null;
+        let currentResultDataUrl = null;
+        let qrInstance = null;
+
+        // Apply real-time video CSS filters for glare/brightness control
+        function updateVideoFilter() {
+            const b = brightnessRange.value;
+            const c = contrastRange.value;
+            brightnessVal.textContent = b + '%';
+            contrastVal.textContent = c + '%';
+            video.style.filter = `brightness(${b}%) contrast(${c}%)`;
+        }
+
+        brightnessRange.addEventListener('input', updateVideoFilter);
+        contrastRange.addEventListener('input', updateVideoFilter);
+
+        resetExposureBtn.addEventListener('click', () => {
+            brightnessRange.value = 100;
+            contrastRange.value = 100;
+            updateVideoFilter();
+        });
+
+        // Update Frame UI helper
+        function updateFrameUI(ratio) {
+            selectedRatio = ratio;
+            frameBtns.forEach(b => {
+                if (b.dataset.ratio === ratio) {
+                    b.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700', 'border-2');
+                    b.classList.remove('border-slate-200', 'bg-white', 'text-slate-600', 'border');
+                } else {
+                    b.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700', 'border-2');
+                    b.classList.add('border-slate-200', 'bg-white', 'text-slate-600', 'border');
+                }
+            });
+        }
+
+        // Update Background UI helper
+        function updateBgUI(bg) {
+            selectedBg = bg;
+            bgBtns.forEach(b => {
+                if (b.dataset.bg === bg) {
+                    b.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-800', 'border-2');
+                    b.classList.remove('border-slate-200', 'bg-white', 'text-slate-600', 'border');
+                } else {
+                    b.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-800', 'border-2');
+                    b.classList.add('border-slate-200', 'bg-white', 'text-slate-600', 'border');
+                }
+            });
+        }
+
+        // Toggle detail options visibility based on filter
+        function updateDetailVisibility() {
+            const val = filterSelect.value;
+            if (val === 'resume') {
+                detailOptions.classList.remove('hidden');
+                suitOptions.classList.remove('hidden');
+            } else if (['casual', 'ceo', 'medical', 'creative'].includes(val)) {
+                detailOptions.classList.remove('hidden');
+                suitOptions.classList.add('hidden');
+            } else {
+                detailOptions.classList.add('hidden');
+            }
+        }
+
+        filterSelect.addEventListener('change', updateDetailVisibility);
+
+        frameBtns.forEach(btn => {
+            btn.addEventListener('click', () => updateFrameUI(btn.dataset.ratio));
+        });
+
+        bgBtns.forEach(btn => {
+            btn.addEventListener('click', () => updateBgUI(btn.dataset.bg));
+        });
+
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+
+                presetBtns.forEach(b => {
+                    b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                    b.classList.add('bg-white', 'text-slate-700', 'border-blue-200');
+                });
+                btn.classList.remove('bg-white', 'text-slate-700', 'border-blue-200');
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+
+                if (preset === 'standard') {
+                    filterSelect.value = 'resume';
+                    suitColorSelect.value = 'navy';
+                    tieSelect.value = 'tie_blue';
+                    updateBgUI('blue');
+                    updateFrameUI('3:4');
+                } else if (preset === 'startup') {
+                    filterSelect.value = 'resume';
+                    suitColorSelect.value = 'charcoal';
+                    tieSelect.value = 'no_tie';
+                    updateBgUI('gray');
+                    updateFrameUI('3:4');
+                } else if (preset === 'passport') {
+                    filterSelect.value = 'resume';
+                    suitColorSelect.value = 'black';
+                    tieSelect.value = 'no_tie';
+                    updateBgUI('white');
+                    updateFrameUI('3:4');
+                } else if (preset === 'warm') {
+                    filterSelect.value = 'casual';
+                    suitColorSelect.value = 'beige';
+                    tieSelect.value = 'no_tie';
+                    updateBgUI('beige');
+                    updateFrameUI('1:1');
+                }
+                updateDetailVisibility();
+            });
+        });
+
+        // Start Camera function
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: useFrontCamera ? "user" : "environment",
+                    width: { ideal: 640 },
+                    height: { ideal: 800 }
+                },
+                audio: false
+            };
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+                video.classList.remove('hidden');
+                capturedShotsContainer.classList.add('hidden');
+                cameraControls.classList.remove('hidden');
+                exposurePanel.classList.remove('hidden');
+                optionsPanel.classList.add('hidden');
+                previewControls.classList.add('hidden');
+                hideError();
+            } catch (err) {
+                console.error("Camera access error:", err);
+                showError("카메라 접근에 실패했습니다. 권한을 허용해주세요.");
+            }
+        }
+
+        window.onload = () => {
+            startCamera();
+        };
+
+        switchCameraBtn.addEventListener('click', () => {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+                resetCaptureBtn();
+            }
+            useFrontCamera = !useFrontCamera;
+            startCamera();
+        });
+
+        function resetCaptureBtn() {
+            countdownOverlay.classList.add('hidden');
+            captureBtn.innerHTML = '<i class="fa-solid fa-camera"></i> 5초 타이머로 3장 연속 촬영하기';
+            captureBtn.classList.replace('bg-red-500', 'bg-blue-600');
+            captureBtn.classList.replace('hover:bg-red-600', 'hover:bg-blue-700');
+        }
+
+        function triggerFlash() {
+            flashOverlay.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                flashOverlay.classList.remove('opacity-0');
+                flashOverlay.classList.add('opacity-100');
+                setTimeout(() => {
+                    flashOverlay.classList.remove('opacity-100');
+                    flashOverlay.classList.add('opacity-0');
+                    setTimeout(() => flashOverlay.classList.add('hidden'), 300);
+                }, 100);
+            });
+        }
+
+        function takeSnapshotToMemory() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.filter = `brightness(${brightnessRange.value}%) contrast(${contrastRange.value}%)`;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.9);
+        }
+
+        // 3 sequential shots with 5s initial countdown, then 1s interval between shots 1, 2, 3
+        captureBtn.addEventListener('click', () => {
+            if (!currentStream) return;
+
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+                resetCaptureBtn();
+                return;
+            }
+
+            capturedShots = [];
+            let totalSteps = 5; // 5 seconds initial countdown
+            countdownNumber.textContent = totalSteps;
+            shotCountBadge.textContent = "첫 번째 사진 촬영 준비중...";
+            countdownOverlay.classList.remove('hidden');
+
+            captureBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> 촬영 취소 (${totalSteps}초)`;
+            captureBtn.classList.replace('bg-blue-600', 'bg-red-500');
+            captureBtn.classList.replace('hover:bg-blue-700', 'hover:bg-red-600');
+
+            countdownTimer = setInterval(() => {
+                totalSteps--;
+                if (totalSteps > 0) {
+                    countdownNumber.textContent = totalSteps;
+                    captureBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> 촬영 취소 (${totalSteps}초)`;
+                } else {
+                    // Initial countdown finished! Now capture Shot 1, then Shot 2, then Shot 3
+                    clearInterval(countdownTimer);
+
+                    // Shot 1
+                    triggerFlash();
+                    capturedShots.push(takeSnapshotToMemory());
+
+                    // Shot 2 after 1.2s
+                    shotCountBadge.textContent = "2번째 사진 촬영 중... (미소 유지)";
+                    countdownNumber.textContent = "2";
+                    setTimeout(() => {
+                        triggerFlash();
+                        capturedShots.push(takeSnapshotToMemory());
+
+                        // Shot 3 after another 1.2s
+                        shotCountBadge.textContent = "3번째 마지막 촬영 중...";
+                        countdownNumber.textContent = "3";
+                        setTimeout(() => {
+                            triggerFlash();
+                            capturedShots.push(takeSnapshotToMemory());
+
+                            // All 3 shots captured successfully!
+                            countdownOverlay.classList.add('hidden');
+                            resetCaptureBtn();
+                            onAllShotsCaptured();
+                        }, 1200);
+
+                    }, 1200);
+                }
+            }, 1000);
+        });
+
+        function onAllShotsCaptured() {
+            selectedShotIndex = 0;
+            renderThumbnails();
+
+            video.classList.add('hidden');
+            capturedShotsContainer.classList.remove('hidden');
+            cameraControls.classList.add('hidden');
+            exposurePanel.classList.add('hidden');
+            optionsPanel.classList.remove('hidden');
+            previewControls.classList.remove('hidden');
+        }
+
+        function renderThumbnails() {
+            shotsThumbnails.innerHTML = '';
+            capturedShots.forEach((shot, idx) => {
+                const div = document.createElement('div');
+                div.className = `relative rounded-lg overflow-hidden border-2 cursor-pointer aspect-[4/5] transition ${idx === selectedShotIndex ? 'border-blue-600 ring-2 ring-blue-300' : 'border-slate-200 opacity-70 hover:opacity-100'}`;
+                div.innerHTML = `
+                    <img src="${shot}" class="w-full h-full object-cover">
+                    <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">${idx + 1}장</span>
+                `;
+                div.onclick = () => {
+                    selectedShotIndex = idx;
+                    selectedShotIndexText.textContent = `${idx + 1}번 선택됨`;
+                    renderThumbnails();
+                };
+                shotsThumbnails.appendChild(div);
+            });
+        }
+
+        retakeBtn.addEventListener('click', () => {
+            capturedShots = [];
+            video.classList.remove('hidden');
+            capturedShotsContainer.classList.add('hidden');
+
+            cameraControls.classList.remove('hidden');
+            exposurePanel.classList.remove('hidden');
+            optionsPanel.classList.add('hidden');
+            previewControls.classList.add('hidden');
+        });
+
+        function showError(msg) {
+            errorBox.textContent = msg;
+            errorBox.classList.remove('hidden');
+            setTimeout(() => {
+                errorBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        function hideError() {
+            errorBox.classList.add('hidden');
+        }
+
+        // Generate Resume Photo via Gemini API
+        generateBtn.addEventListener('click', async () => {
+            if (capturedShots.length === 0) return;
+
+            const base64Data = capturedShots[selectedShotIndex].split(',')[1];
+
+            emptyState.classList.add('hidden');
+            resultState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            hideError();
+
+            const filterType = filterSelect.value;
+            const suitColor = suitColorSelect.value;
+            const tieOption = tieSelect.value;
+
+            const suitColorMap = {
+                navy: "단정한 네이비(남색) 비즈니스 수트 자켓",
+                charcoal: "세련된 차콜 그레이(진회색) 비즈니스 수트 자켓",
+                black: "깔끔한 블랙 정장 자켓",
+                beige: "부드러운 인상의 베이지색 정장 자켓"
+            };
+
+            const tieMap = {
+                tie_blue: "깨끗한 흰색 셔츠에 신뢰감을 주는 블루 계열 넥타이 착용 (여성의 경우 단정한 셔츠나 블라우스)",
+                tie_red: "깨끗한 흰색 셔츠에 포인트가 되는 버건디/와인색 넥타이 착용 (여성의 경우 단정한 블라우스)",
+                no_tie: "넥타이 없이 깔끔하게 오픈된 화이트 셔츠 또는 단정한 정장 블라우스 착용 (노타이 비즈니스 스타일)"
+            };
+
+            const bgMap = {
+                blue: "청량하고 신뢰감을 주는 밝은 파스텔 블루 그라데이션 스튜디오 배경",
+                white: "여권 및 공식 증명사진 규격의 티 없이 깔끔한 순백색(Pure White) 단색 배경",
+                gray: "모던하고 깊이감 있는 라이트 그레이(밝은 회색) 스튜디오 배경",
+                beige: "따뜻하고 부드러운 인상을 주는 웜 베이지/크림톤 스튜디오 배경"
+            };
+
+            let promptText = "";
+
+            switch(filterType) {
+                case "casual":
+                    promptText = `이 사람의 얼굴과 이목구비를 그대로 유지하면서, 세련된 비즈니스 캐주얼 스타일의 프로필 사진으로 변환해주세요. 1. 의상: 모던하고 깔끔한 니트나 셔츠, 캐주얼 자켓. 2. 배경: ${bgMap[selectedBg]}. 3. 분위기: 자연스럽고 신뢰감 있는 미소와 부드러운 스튜디오 조명. 고화질 사실적인 사진.`;
+                    break;
+                case "ceo":
+                    promptText = `이 사람의 얼굴과 이목구비를 그대로 유지하면서, 카리스마 있고 신뢰감을 주는 CEO/임원급 하이엔드 비즈니스 프로필 사진으로 변환해주세요. 1. 의상: 최고급 맞춤형 다크 수트와 고급스러운 실크 넥타이 또는 품격 있는 정장. 2. 배경: ${bgMap[selectedBg]} 또는 깊이감 있는 럭셔리 스튜디오 배경. 3. 조명: 입체감을 살리는 고급스러운 스튜디오 인물 조명. 8k 초고화질 사진.`;
+                    break;
+                case "medical":
+                    promptText = `이 사람의 얼굴과 이목구비를 그대로 유지하면서, 전문적이고 신뢰감 넘치는 의사/약사/연구원 프로필 사진으로 변환해주세요. 1. 의상: 깔끔한 셔츠/정장 위에 다림질이 잘 된 새하얀 전문가용 가운(White Lab Coat) 착용. 2. 배경: ${bgMap[selectedBg]}. 3. 분위기: 지적이고 따뜻한 미소, 밝고 깨끗한 스튜디오 조명. 고화질 사실적인 사진.`;
+                    break;
+                case "creative":
+                    promptText = `이 사람의 얼굴과 이목구비를 그대로 유지하면서, 감각적이고 트렌디한 디자이너/크리에이티브 디렉터 프로필 사진으로 변환해주세요. 1. 의상: 세련된 블랙 터틀넥 또는 모던한 디자이너 자켓. 2. 배경: ${bgMap[selectedBg]}. 3. 분위기: 감각적인 매거진 인터뷰 화보 스타일의 조명과 세련된 색감. 고화질 사진.`;
+                    break;
+                case "bw_profile":
+                    promptText = "이 사람의 얼굴과 이목구비를 그대로 유지하면서, 감성적이고 깊이 있는 흑백(Black and White) 배우/아티스트 프로필 화보로 변환해주세요. 조명: 섬세한 명암 대비(Chiaroscuro)와 부드러운 스튜디오 조명. 질감: 고급 흑백 필름 사진 같은 깊이감과 선명한 눈빛. 고화질 사진.";
+                    break;
+                case "vintage_film":
+                    promptText = "이 사람의 얼굴과 이목구비를 그대로 유지하면서, 1990년대 아날로그 필름 카메라로 촬영한 듯한 레트로 감성 포트레이트 사진으로 변환해주세요. 색감: 따뜻하고 아련한 코닥 필름 색감, 은은한 필름 그레인(입자감). 의상: 스타일리시한 빈티지 캐주얼. 자연스럽고 감성적인 분위기.";
+                    break;
+                case "cinematic":
+                    promptText = "이 사람의 얼굴과 이목구비를 그대로 유지하며, 영화 포스터 같은 시네마틱한 프로필 사진으로 만들어주세요. 조명: 극적인 명암비(Dramatic lighting)와 림 라이트(Rim light). 배경: 깊이감 있는 어두운 스튜디오 또는 시네마틱 보케. 분위기: 카리스마 있는 느낌. 고화질 사실적인 사진.";
+                    break;
+                case "pixar_3d":
+                    promptText = "이 사람의 얼굴 특징, 헤어스타일, 안경 유무, 표정을 살려서 귀엽고 생동감 넘치는 디즈니/픽사 스타일의 3D 애니메이션 캐릭터 프로필로 변환해주세요. 부드럽고 따뜻한 3D 렌더링 조명, 크고 맑은 눈망울, 깔끔한 스튜디오 배경, 4k 고해상도 3D 그래픽.";
+                    break;
+                case "anime":
+                    promptText = "이 사람의 얼굴 특징과 분위기를 살려서 고퀄리티 한국 웹툰 및 일본 애니메이션(신카이 마코토 감독 스타일의 맑고 화사한 색감) 캐릭터 일러스트로 변환해주세요. 반짝이는 조명 효과와 감성적인 배경, 매력적이고 정교한 2D 디지털 아트.";
+                    break;
+                case "watercolor":
+                    promptText = "이 사람의 얼굴을 바탕으로 한 아름다운 수채화풍 초상화 예술작품으로 변환해주세요. 스타일: 부드러운 붓터치와 따뜻하고 화사한 파스텔 톤 색감. 미니멀하고 감성적인 갤러리 분위기 그림.";
+                    break;
+                case "cyberpunk":
+                    promptText = "이 사람의 얼굴을 바탕으로 화려한 네온 조문의 사이버펑크 스타일 미래형 프로필로 변환해주세요. 배경: 미래 도시의 네온사인, 디지털 홀로그램. 의상: 세련된 테크웨어. 조명: 파란색과 마젠타 색상의 화려한 듀얼 톤 네온 조명. 8k 고해상도 그래픽.";
+                    break;
+                case "resume":
+                default:
+                    promptText = `이 사람의 얼굴, 안경 유무, 이목구비를 그대로 유지하면서 취업 성공을 위한 완벽하고 단정한 한국 이력서용 증명사진으로 변환해주세요. [핵심 변환 조건]: 1. 의상: ${suitColorMap[suitColor]} 및 ${tieMap[tieOption]}. 2. 표정: 어색하지 않고 자연스럽고 호감 가는 미소(Natural Smile). 3. 헤어: 잔머리나 헝클어진 머리 없이 프로페셔널하고 단정한 헤어스타일(Neat & Professional Hair Styling). 4. 배경: ${bgMap[selectedBg]}. 5. 조명/보정: 전문 사진관 스튜디오 조명으로 피부톤을 자연스럽고 화사하게 보정하되 본인 얼굴 고유의 특징은 완벽히 보존. 정면을 응시하는 반듯한 상반신 증명사진 구도. 고화질 사실적인 사진.`;
+                    break;
+            }
+
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: promptText },
+                        {
+                            inlineData: {
+                                mimeType: "image/jpeg",
+                                data: base64Data
+                            }
+                        }
+                    ]
+                }],
+                generationConfig: {
+                    responseModalities: ['IMAGE'],
+                    imageConfig: { aspectRatio: selectedRatio }
+                }
+            };
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 오류: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const inlineData = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData;
+
+                if (inlineData && inlineData.data) {
+                    currentResultDataUrl = `data:${inlineData.mimeType};base64,${inlineData.data}`;
+
+                    resultImageContainer.style.aspectRatio = selectedRatio.replace(':', '/');
+                    resultImage.src = currentResultDataUrl;
+                    loadingState.classList.add('hidden');
+                    resultState.classList.remove('hidden');
+
+                    setupDownload(currentResultDataUrl);
+                } else {
+                    throw new Error("이미지 생성에 실패했습니다.");
+                }
+
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                showError("AI 사진 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
+            }
+        });
+
+        // Setup Download button
+        function setupDownload(dataUrl) {
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `resume_photo_${new Date().getTime()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+        }
+
+        // QR Code generation logic pointing directly to current browser URL or image data
+        showQrBtn.addEventListener('click', () => {
+            if (!currentResultDataUrl) return;
+
+            qrcodeContainer.innerHTML = '';
+            let targetUrl = window.location.href;
+            qrUrlText.textContent = targetUrl;
+
+            qrInstance = new QRCode(qrcodeContainer, {
+                text: targetUrl,
+                width: 180,
+                height: 180,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            qrModal.classList.remove('hidden');
+        });
+
+        closeQrModal.addEventListener('click', () => {
+            qrModal.classList.add('hidden');
+        });
+
+        qrModal.addEventListener('click', (e) => {
+            if (e.target === qrModal) {
+                qrModal.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
