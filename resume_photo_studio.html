@@ -415,6 +415,16 @@
         let currentResultDataUrl = null;
         let qrInstance = null;
 
+        // API 설정 저장/복원 (localStorage 사용 불가 시 무시)
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const modelInput = document.getElementById('modelInput');
+        try {
+            apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+            modelInput.value = localStorage.getItem('gemini_model') || '';
+        } catch (e) {}
+        apiKeyInput.addEventListener('change', () => { try { localStorage.setItem('gemini_api_key', apiKeyInput.value.trim()); } catch (e) {} });
+        modelInput.addEventListener('change', () => { try { localStorage.setItem('gemini_model', modelInput.value.trim()); } catch (e) {} });
+
         // Apply real-time video CSS filters for glare/brightness control
         function updateVideoFilter() {
             const b = brightnessRange.value;
