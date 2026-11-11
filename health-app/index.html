@@ -99,7 +99,7 @@ a { color: var(--accent) }
 (function () {
 'use strict';
 var KEY = 'glucolipid-notebook-v1';
-var TABS = [['home','오늘'],['weight','체중'],['glucose','혈당·검사'],['diet','식사'],['exercise','운동'],['meds','복약'],['info','질병 정보'],['data','설정·백업']];
+var TABS = [['info','질병 정보'],['home','오늘'],['weight','체중'],['glucose','혈당·검사'],['diet','식사'],['exercise','운동'],['meds','복약'],['data','설정·백업']];
 var DIET = [
   ['drink','단 음료(탄산음료·주스·믹스커피)를 마시지 않음'],
   ['veg','매 끼니 채소 반찬을 먹음'],
@@ -108,7 +108,7 @@ var DIET = [
   ['snack','야식과 과한 간식을 하지 않음'],
   ['alcohol','술을 마시지 않음']
 ];
-var tab = 'home', resetArmed = false, msg = '';
+var tab = 'info', resetArmed = false, msg = '';
 
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
 function iso(dt) { return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()); }
