@@ -1,0 +1,380 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>혈당·지질 수첩</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column like a clinic record book — summary tiles first, then log forms and lists per tab. */
+:root {
+  --bg: #F2F5F6; --surface: #FFFFFF; --ink: #14262E; --muted: #5A6D75; --line: #D5DEE1;
+  --accent: #0B6F79; --accent-ink: #FFFFFF; --accent-soft: #DCEEF0;
+  --good: #23764A; --good-soft: #DDF0E4; --warn: #96620F; --warn-soft: #F7E9CC; --crit: #B4342F; --crit-soft: #F8DEDC;
+  --display: "Hahmlet", "Noto Serif KR", serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E181C; --surface: #17252B; --ink: #E3EDF0; --muted: #91A6AE; --line: #2B3D45;
+  --accent: #55C2CB; --accent-ink: #06262A; --accent-soft: #173A40;
+  --good: #6FCB96; --good-soft: #173526; --warn: #E3B659; --warn-soft: #3A2E12; --crit: #F08A84; --crit-soft: #40201E;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E181C; --surface: #17252B; --ink: #E3EDF0; --muted: #91A6AE; --line: #2B3D45;
+  --accent: #55C2CB; --accent-ink: #06262A; --accent-soft: #173A40;
+  --good: #6FCB96; --good-soft: #173526; --warn: #E3B659; --warn-soft: #3A2E12; --crit: #F08A84; --crit-soft: #40201E;
+  color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.6 var(--body); }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 18px }
+header h1 { font: 700 26px/1.2 var(--display); margin: 0; letter-spacing: -0.01em }
+header p { margin: 4px 0 0; color: var(--muted); font-size: 13px }
+nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px }
+nav button { flex: none; font: 500 14px var(--body); padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: transparent; color: var(--muted); cursor: pointer }
+nav button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+main { display: flex; flex-direction: column; gap: 18px }
+h2 { font: 600 19px/1.3 var(--display); margin: 0; text-wrap: balance }
+h3 { font: 600 15px/1.4 var(--body); margin: 0 }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.note { color: var(--muted); font-size: 13px; margin: 0 }
+.banner { background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 10px 14px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; font-size: 14px }
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px }
+@media (min-width: 640px) { .tiles { grid-template-columns: repeat(4, 1fr) } }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0 }
+.tile .lab { font-size: 12px; color: var(--muted); letter-spacing: 0.02em }
+.tile .num { font: 600 24px/1.2 var(--body); font-variant-numeric: tabular-nums }
+.tile .num small { font-size: 13px; font-weight: 400; color: var(--muted) }
+.pill { display: inline-block; align-self: flex-start; font-size: 12px; font-weight: 500; padding: 1px 9px; border-radius: 999px; white-space: nowrap }
+.pill.good { background: var(--good-soft); color: var(--good) } .pill.warn { background: var(--warn-soft); color: var(--warn) }
+.pill.crit { background: var(--crit-soft); color: var(--crit) } .pill.mute { background: var(--accent-soft); color: var(--accent) }
+form.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end }
+label.f { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); flex: 1 1 120px; min-width: 0 }
+label.f.wide { flex-basis: 100% }
+input, select, textarea { font: 400 15px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; width: 100%; min-width: 0 }
+textarea { min-height: 90px; resize: vertical }
+.btn { font: 600 14px var(--body); padding: 9px 16px; border-radius: 7px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer }
+.btn.ghost { background: transparent; color: var(--accent) }
+.btn.danger { border-color: var(--crit); background: transparent; color: var(--crit) }
+.x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; padding: 4px 6px; border-radius: 5px }
+.x:hover { color: var(--crit) }
+ul.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column }
+ul.log li { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums }
+ul.log li:first-child { border-top: 0 }
+ul.log .d { color: var(--muted); font-size: 13px; flex: none; white-space: nowrap }
+ul.log .t { flex: 1; min-width: 0; overflow-wrap: anywhere }
+ul.log .v { font-weight: 600; flex: none }
+.checks { display: flex; flex-direction: column; gap: 2px }
+.checks label { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; cursor: pointer }
+.checks input { width: 18px; height: 18px; flex: none; margin-top: 3px; accent-color: var(--accent) }
+.bar { height: 10px; background: var(--accent-soft); border-radius: 999px; overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px }
+svg.chart { width: 100%; height: auto; display: block }
+svg.chart text { font: 15px var(--body); fill: var(--muted); font-variant-numeric: tabular-nums }
+.tablewrap { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums }
+th, td { text-align: left; padding: 7px 10px 7px 0; border-top: 1px solid var(--line); vertical-align: top }
+th { font-weight: 500; color: var(--muted); font-size: 12px; border-top: 0 }
+.info p, .info ul { margin: 0; max-width: 65ch } .info ul { padding-left: 20px }
+.info li + li { margin-top: 3px }
+.alert { background: var(--crit-soft); color: var(--crit); border-radius: 8px; padding: 12px 14px }
+.alert h3 { color: var(--crit) }
+a { color: var(--accent) }
+.two { display: grid; gap: 12px } @media (min-width: 640px) { .two { grid-template-columns: 1fr 1fr } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>혈당·지질 수첩</h1>
+    <p>당뇨병·고지혈증 자가 관리 기록장. 기록은 이 기기의 브라우저에만 저장됩니다.</p>
+  </header>
+  <nav id="nav" role="tablist" aria-label="메뉴"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+(function () {
+'use strict';
+var KEY = 'glucolipid-notebook-v1';
+var TABS = [['home','오늘'],['weight','체중'],['glucose','혈당·검사'],['diet','식사'],['exercise','운동'],['meds','복약'],['info','질병 정보'],['data','설정·백업']];
+var DIET = [
+  ['drink','단 음료(탄산음료·주스·믹스커피)를 마시지 않음'],
+  ['veg','매 끼니 채소 반찬을 먹음'],
+  ['grain','흰쌀밥 대신 잡곡밥, 정해진 밥 양을 지킴'],
+  ['fat','튀김·기름진 고기·가공육을 먹지 않음'],
+  ['snack','야식과 과한 간식을 하지 않음'],
+  ['alcohol','술을 마시지 않음']
+];
+var tab = 'home', resetArmed = false, msg = '';
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function iso(dt) { return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()); }
+function today() { return iso(new Date()); }
+function ago(n) { var d = new Date(); d.setDate(d.getDate() - n); return iso(d); }
+function md(s) { var p = s.split('-'); return (+p[1]) + '/' + (+p[2]); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function num(v) { var n = parseFloat(v); return isFinite(n) ? n : null; }
+
+function blank() {
+  return { example: false, profile: { height: null, goalWeight: null, a1cTarget: 6.5, ldlTarget: 100 },
+    weights: [], glucose: [], labs: [], meals: [], dietChecks: {}, exercise: [], meds: [], medChecks: {} };
+}
+function example() {
+  var s = blank(); s.example = true;
+  s.profile.height = 170; s.profile.goalWeight = 72;
+  [[56,78.4],[49,78.0],[42,77.9],[35,77.3],[28,77.0],[21,76.8],[14,76.5],[7,76.3],[0,76.1]].forEach(function (p) { s.weights.push({ id: uid(), d: ago(p[0]), v: p[1] }); });
+  [[3,'공복',128],[2,'식후 2시간',192],[2,'공복',121],[1,'식후 2시간',168],[0,'공복',116]].forEach(function (g) { s.glucose.push({ id: uid(), d: ago(g[0]), type: g[1], v: g[2] }); });
+  s.labs.push({ id: uid(), d: ago(60), a1c: 7.1, ldl: 118, hdl: 44, tg: 176 });
+  [[5,'빠르게 걷기',40,'중강도'],[3,'실내 자전거',30,'중강도'],[1,'근력 운동',25,'중강도']].forEach(function (e) { s.exercise.push({ id: uid(), d: ago(e[0]), type: e[1], min: e[2], inten: e[3] }); });
+  s.meals.push({ id: uid(), d: today(), type: '아침', text: '잡곡밥 2/3공기, 두부조림, 나물 2가지' });
+  s.meds = [{ id: 'm1', name: '당뇨약 (예시)', time: '아침 식후' }, { id: 'm2', name: '고지혈증약 (예시)', time: '저녁 식후' }];
+  s.medChecks[today()] = ['m1'];
+  s.dietChecks[today()] = ['drink', 'veg'];
+  return s;
+}
+var S;
+function load() {
+  try { var raw = localStorage.getItem(KEY); if (raw) { S = Object.assign(blank(), JSON.parse(raw)); S.profile = Object.assign(blank().profile, S.profile); return; } } catch (e) {}
+  S = example();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function byDateDesc(a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : 0; }
+function latest(arr) { return arr.slice().sort(byDateDesc)[0] || null; }
+
+function bmiOf(w) { var h = S.profile.height; return (h && w) ? w / Math.pow(h / 100, 2) : null; }
+function bmiCat(b) { return b < 18.5 ? ['저체중','warn'] : b < 23 ? ['정상','good'] : b < 25 ? ['비만 전단계','warn'] : ['비만','crit']; }
+function gEval(type, v) {
+  if (v < 70) return ['저혈당','crit'];
+  if (type === '공복') return v <= 130 ? ['목표 범위','good'] : ['높음','warn'];
+  if (type === '식후 2시간') return v < 180 ? ['목표 범위','good'] : ['높음','warn'];
+  return ['참고','mute'];
+}
+function pill(p) { return '<span class="pill ' + p[1] + '">' + p[0] + '</span>'; }
+function weekMin() { var from = ago(6); return S.exercise.filter(function (e) { return e.d >= from; }).reduce(function (a, e) { return a + e.min; }, 0); }
+function field(label, inner, cls) { return '<label class="f ' + (cls || '') + '">' + label + inner + '</label>'; }
+function dateInput(id) { return '<input type="date" id="' + id + '" name="d" value="' + today() + '" max="' + today() + '" required>'; }
+function del(list, id) { return '<button class="x" data-act="del" data-list="' + list + '" data-id="' + id + '" aria-label="삭제">삭제</button>'; }
+function empty(t) { return '<p class="note">' + t + '</p>'; }
+
+function chart(pts, goal) {
+  var W = 640, H = 220, L = 46, R = 18, T = 16, B = 28;
+  var vals = pts.map(function (p) { return p.v; }); if (goal) vals.push(goal);
+  var lo = Math.floor(Math.min.apply(null, vals) - 0.5), hi = Math.ceil(Math.max.apply(null, vals) + 0.5);
+  var t0 = +new Date(pts[0].d), t1 = +new Date(pts[pts.length - 1].d);
+  function x(d) { return t1 === t0 ? (L + W - R) / 2 : L + (+new Date(d) - t0) / (t1 - t0) * (W - L - R); }
+  function y(v) { return T + (hi - v) / (hi - lo) * (H - T - B); }
+  var o = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="체중 변화 그래프">';
+  for (var i = 0; i <= 4; i++) { var tv = lo + (hi - lo) * i / 4, ty = y(tv);
+    o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + ty + '" y2="' + ty + '" stroke="var(--line)" stroke-width="1"/>' +
+         '<text x="' + (L - 8) + '" y="' + (ty + 4) + '" text-anchor="end">' + tv.toFixed(1) + '</text>'; }
+  var line = pts.map(function (p) { return x(p.d).toFixed(1) + ',' + y(p.v).toFixed(1); }).join(' ');
+  if (pts.length > 1) {
+    o += '<polygon fill="var(--accent-soft)" points="' + x(pts[0].d) + ',' + (H - B) + ' ' + line + ' ' + x(pts[pts.length - 1].d) + ',' + (H - B) + '"/>' +
+         '<polyline fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" points="' + line + '"/>';
+  }
+  if (goal) { var gy = y(goal);
+    o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '" stroke="var(--good)" stroke-width="1.5" stroke-dasharray="5 4"/>' +
+         '<text x="' + (W - R) + '" y="' + (gy - 5) + '" text-anchor="end" style="fill:var(--good)">목표 ' + goal.toFixed(1) + '</text>'; }
+  pts.forEach(function (p, i) { var last = i === pts.length - 1;
+    o += '<circle cx="' + x(p.d) + '" cy="' + y(p.v) + '" r="' + (last ? 5 : 2.5) + '" fill="var(--accent)"/>'; });
+  o += '<text x="' + L + '" y="' + (H - 8) + '">' + md(pts[0].d) + '</text>';
+  if (pts.length > 1) o += '<text x="' + (W - R) + '" y="' + (H - 8) + '" text-anchor="end">' + md(pts[pts.length - 1].d) + '</text>';
+  return o + '</svg>';
+}
+
+var V = {};
+V.home = function () {
+  var w = latest(S.weights), g = latest(S.glucose), lab = latest(S.labs), wm = weekMin();
+  var b = w ? bmiOf(w.v) : null, taken = (S.medChecks[today()] || []).length, dc = (S.dietChecks[today()] || []).length;
+  var o = '<div class="tiles">';
+  o += '<div class="tile"><span class="lab">최근 체중</span><span class="num">' + (w ? w.v.toFixed(1) + ' <small>kg</small>' : '–') + '</span>' + (b ? pill(['BMI ' + b.toFixed(1) + ' · ' + bmiCat(b)[0], bmiCat(b)[1]]) : '<span class="note">키를 입력하면 BMI 표시</span>') + '</div>';
+  o += '<div class="tile"><span class="lab">최근 혈당' + (g ? ' · ' + g.type : '') + '</span><span class="num">' + (g ? g.v + ' <small>mg/dL</small>' : '–') + '</span>' + (g ? pill(gEval(g.type, g.v)) : '') + '</div>';
+  o += '<div class="tile"><span class="lab">최근 7일 운동</span><span class="num">' + wm + ' <small>/ 150분</small></span>' + pill(wm >= 150 ? ['목표 달성','good'] : ['' + (150 - wm) + '분 남음','mute']) + '</div>';
+  o += '<div class="tile"><span class="lab">오늘 복약</span><span class="num">' + taken + ' <small>/ ' + S.meds.length + '</small></span>' + (S.meds.length ? pill(taken >= S.meds.length ? ['모두 복용','good'] : ['확인 필요','warn']) : '<span class="note">약을 등록하세요</span>') + '</div>';
+  o += '</div>';
+  o += '<section class="panel"><h2>오늘 복약 확인</h2>' + medChecks() + '</section>';
+  o += '<section class="panel"><h2>오늘 식사 습관 ' + dc + ' / ' + DIET.length + '</h2>' + dietChecks() + '</section>';
+  if (lab) {
+    o += '<section class="panel"><h2>최근 검사 결과 <span class="note">' + lab.d + '</span></h2><div class="tablewrap"><table><tr><th>항목</th><th>결과</th><th>내 목표</th><th>상태</th></tr>';
+    var rows = [['당화혈색소', lab.a1c, '%', S.profile.a1cTarget, true], ['LDL 콜레스테롤', lab.ldl, 'mg/dL', S.profile.ldlTarget, true], ['중성지방', lab.tg, 'mg/dL', 150, true], ['HDL 콜레스테롤', lab.hdl, 'mg/dL', null, false]];
+    rows.forEach(function (r) { if (r[1] == null) return;
+      o += '<tr><td>' + r[0] + '</td><td><b>' + r[1] + '</b> ' + r[2] + '</td><td>' + (r[3] != null ? r[3] + ' 미만' : '–') + '</td><td>' + (r[3] != null ? pill(r[1] < r[3] ? ['목표 도달','good'] : ['목표보다 높음','warn']) : '') + '</td></tr>'; });
+    o += '</table></div><p class="note">목표 수치는 설정·백업 탭에서 주치의가 정해 준 값으로 바꿀 수 있습니다.</p></section>';
+  }
+  return o;
+};
+function medChecks() {
+  if (!S.meds.length) return empty('복약 탭에서 드시는 약을 등록하면 여기서 매일 확인할 수 있습니다.');
+  var done = S.medChecks[today()] || [];
+  return '<div class="checks">' + S.meds.map(function (m) {
+    return '<label><input type="checkbox" id="mc-' + m.id + '" data-check="medChecks" data-id="' + m.id + '"' + (done.indexOf(m.id) >= 0 ? ' checked' : '') + '><span>' + esc(m.name) + ' <span class="note">' + esc(m.time) + '</span></span></label>'; }).join('') + '</div>';
+}
+function dietChecks() {
+  var done = S.dietChecks[today()] || [];
+  return '<div class="checks">' + DIET.map(function (c) {
+    return '<label><input type="checkbox" id="dc-' + c[0] + '" data-check="dietChecks" data-id="' + c[0] + '"' + (done.indexOf(c[0]) >= 0 ? ' checked' : '') + '><span>' + c[1] + '</span></label>'; }).join('') + '</div>';
+}
+
+V.weight = function () {
+  var asc = S.weights.slice().sort(byDateDesc).reverse(), w = asc[asc.length - 1], first = asc[0];
+  var o = '<section class="panel"><h2>체중 기록</h2><form class="row" data-form="weight">' + field('날짜', dateInput('w-d')) +
+    field('체중 (kg)', '<input type="number" id="w-v" name="v" step="0.1" min="20" max="300" inputmode="decimal" required>') + '<button class="btn">기록</button></form></section>';
+  if (asc.length) {
+    o += '<section class="panel"><h2>변화 추이</h2>' + chart(asc, S.profile.goalWeight);
+    var diff = w.v - first.v, b = bmiOf(w.v);
+    o += '<p class="note">첫 기록(' + first.d + ') 대비 ' + (diff > 0 ? '+' : '') + diff.toFixed(1) + ' kg (' + (diff / first.v * 100).toFixed(1) + '%)' +
+      (b ? ' · 현재 BMI ' + b.toFixed(1) + ' (' + bmiCat(b)[0] + ')' : '') +
+      (S.profile.goalWeight ? ' · 목표까지 ' + (w.v - S.profile.goalWeight).toFixed(1) + ' kg' : '') + '</p></section>';
+  }
+  o += '<section class="panel"><h2>기록 목록</h2>' + (asc.length ? '<ul class="log">' + asc.slice().reverse().map(function (r) {
+    return '<li><span class="d">' + r.d + '</span><span class="t"></span><span class="v">' + r.v.toFixed(1) + ' kg</span>' + del('weights', r.id) + '</li>'; }).join('') + '</ul>' : empty('아직 기록이 없습니다. 같은 시간대(예: 아침 기상 후)에 재면 비교하기 좋습니다.')) + '</section>';
+  o += '<section class="panel info"><h3>체중 관리 참고</h3><ul><li>BMI 구분(대한비만학회): 18.5 미만 저체중, 18.5–22.9 정상, 23–24.9 비만 전단계, 25 이상 비만.</li><li>과체중·비만인 제2형 당뇨병 환자는 체중을 5% 이상 줄이면 혈당과 혈중 지질 개선에 도움이 되는 것으로 진료지침에서 권고합니다.</li><li>키와 목표 체중은 설정·백업 탭에서 입력합니다.</li></ul></section>';
+  return o;
+};
+
+V.glucose = function () {
+  var gs = S.glucose.slice().sort(byDateDesc), ls = S.labs.slice().sort(byDateDesc);
+  var o = '<section class="panel"><h2>혈당 기록</h2><form class="row" data-form="glucose">' + field('날짜', dateInput('g-d')) +
+    field('측정 시점', '<select id="g-type" name="type"><option>공복</option><option>식후 2시간</option><option>취침 전</option><option>기타</option></select>') +
+    field('혈당 (mg/dL)', '<input type="number" id="g-v" name="v" min="20" max="700" inputmode="numeric" required>') + '<button class="btn">기록</button></form>' +
+    '<p class="note">표시 기준: 공복 80–130, 식후 2시간 180 미만, 70 미만은 저혈당(대한당뇨병학회 일반 목표). 개인 목표는 주치의와 정합니다.</p>' +
+    (gs.length ? '<ul class="log">' + gs.map(function (r) { return '<li><span class="d">' + r.d + '</span><span class="t">' + esc(r.type) + '</span>' + pill(gEval(r.type, r.v)) + '<span class="v">' + r.v + '</span>' + del('glucose', r.id) + '</li>'; }).join('') + '</ul>' : empty('아직 혈당 기록이 없습니다.')) + '</section>';
+  o += '<section class="panel"><h2>병원 검사 결과</h2><form class="row" data-form="lab">' + field('검사일', dateInput('l-d')) +
+    field('당화혈색소 (%)', '<input type="number" id="l-a1c" name="a1c" step="0.1" min="3" max="20" inputmode="decimal">') +
+    field('LDL (mg/dL)', '<input type="number" id="l-ldl" name="ldl" min="0" max="600" inputmode="numeric">') +
+    field('HDL (mg/dL)', '<input type="number" id="l-hdl" name="hdl" min="0" max="200" inputmode="numeric">') +
+    field('중성지방 (mg/dL)', '<input type="number" id="l-tg" name="tg" min="0" max="3000" inputmode="numeric">') + '<button class="btn">기록</button></form>' +
+    (ls.length ? '<div class="tablewrap"><table><tr><th>검사일</th><th>당화혈색소</th><th>LDL</th><th>HDL</th><th>중성지방</th><th></th></tr>' + ls.map(function (r) {
+      function c(v) { return v == null ? '–' : v; }
+      return '<tr><td>' + r.d + '</td><td>' + c(r.a1c) + '</td><td>' + c(r.ldl) + '</td><td>' + c(r.hdl) + '</td><td>' + c(r.tg) + '</td><td>' + del('labs', r.id) + '</td></tr>'; }).join('') + '</table></div>' : empty('검사 결과지를 받으면 여기에 옮겨 적으세요.')) + '</section>';
+  return o;
+};
+
+V.diet = function () {
+  var ms = S.meals.slice().sort(byDateDesc);
+  var o = '<section class="panel"><h2>오늘 식사 습관 점검</h2>' + dietChecks() + '</section>';
+  o += '<section class="panel"><h2>식사 기록</h2><form class="row" data-form="meal">' + field('날짜', dateInput('m-d')) +
+    field('끼니', '<select id="m-type" name="type"><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>') +
+    field('먹은 것', '<input type="text" id="m-text" name="text" maxlength="200" placeholder="예: 잡곡밥 2/3공기, 생선구이, 나물" required>', 'wide') + '<button class="btn">기록</button></form>' +
+    (ms.length ? '<ul class="log">' + ms.map(function (r) { return '<li><span class="d">' + r.d + '</span><span class="t"><b>' + esc(r.type) + '</b> ' + esc(r.text) + '</span>' + del('meals', r.id) + '</li>'; }).join('') + '</ul>' : empty('아직 식사 기록이 없습니다.')) + '</section>';
+  o += '<div class="two"><section class="panel info"><h3>권장</h3><ul><li>잡곡밥·통곡물, 정해진 양의 탄수화물</li><li>채소, 해조류, 버섯을 매 끼니</li><li>등푸른 생선, 두부·콩류, 살코기</li><li>견과류, 들기름·올리브유 같은 불포화지방(적당량)</li><li>물, 무가당 차</li><li>규칙적인 시간에 천천히 식사</li></ul></section>' +
+    '<section class="panel info"><h3>줄이기</h3><ul><li>탄산음료, 과일주스, 믹스커피 등 당이 든 음료</li><li>떡, 빵, 과자, 흰 밀가루 음식의 과식</li><li>삼겹살·갈비 등 기름진 고기, 가공육(포화지방)</li><li>튀김, 마가린·쇼트닝이 든 과자류(트랜스지방)</li><li>짠 국물, 젓갈, 가공식품(나트륨)</li><li>술: 중성지방을 올리고, 약에 따라 저혈당 위험이 커질 수 있음</li></ul></section></div>' +
+    '<p class="note">필요 열량과 탄수화물 양은 체중·활동량·약 종류에 따라 달라 이 앱에서는 계산하지 않습니다. 병원 영양 상담에서 개인 식사량을 확인하세요.</p>';
+  return o;
+};
+
+V.exercise = function () {
+  var es = S.exercise.slice().sort(byDateDesc), wm = weekMin();
+  var o = '<section class="panel"><h2>최근 7일 운동 ' + wm + '분 / 150분</h2><div class="bar"><i style="width:' + Math.min(100, wm / 150 * 100) + '%"></i></div>' +
+    '<p class="note">' + (wm >= 150 ? '주간 권장량을 채웠습니다.' : '권장량까지 ' + (150 - wm) + '분 남았습니다.') + '</p></section>';
+  o += '<section class="panel"><h2>운동 기록</h2><form class="row" data-form="exercise">' + field('날짜', dateInput('e-d')) +
+    field('종류', '<input type="text" id="e-type" name="type" maxlength="40" list="e-types" placeholder="빠르게 걷기" required><datalist id="e-types"><option>빠르게 걷기</option><option>실내 자전거</option><option>수영</option><option>등산</option><option>근력 운동</option></datalist>') +
+    field('시간 (분)', '<input type="number" id="e-min" name="min" min="1" max="600" inputmode="numeric" required>') +
+    field('강도', '<select id="e-inten" name="inten"><option>중강도</option><option>저강도</option><option>고강도</option></select>') + '<button class="btn">기록</button></form>' +
+    (es.length ? '<ul class="log">' + es.map(function (r) { return '<li><span class="d">' + r.d + '</span><span class="t">' + esc(r.type) + ' <span class="note">' + esc(r.inten) + '</span></span><span class="v">' + r.min + '분</span>' + del('exercise', r.id) + '</li>'; }).join('') + '</ul>' : empty('아직 운동 기록이 없습니다.')) + '</section>';
+  o += '<section class="panel info"><h3>운동 참고 (대한당뇨병학회 진료지침의 일반 권고)</h3><ul><li>유산소 운동: 중강도(약간 숨이 차지만 대화는 가능한 정도)로 주 150분 이상, 주 3일 이상 나누어 하고 이틀 넘게 연속으로 쉬지 않기.</li><li>근력(저항) 운동: 금기 사항이 없으면 주 2회 이상.</li><li>오래 앉아 있는 시간을 줄이고 중간에 자주 일어나 움직이기.</li><li>인슐린이나 설폰요소제 계열 약을 쓰는 경우 운동 중·후 저혈당이 올 수 있으니 사탕이나 주스를 지참하세요. 내가 먹는 약이 해당하는지는 약사·주치의에게 확인하세요.</li><li>가슴 통증, 심한 숨참, 어지러움이 있으면 즉시 중단하고 진료를 받으세요. 합병증(망막·신장·신경·심혈관)이 있으면 운동 종류를 주치의와 먼저 상의하세요.</li><li>발에 맞는 신발과 양말을 신고, 운동 뒤 발에 상처가 없는지 확인하세요.</li></ul></section>';
+  return o;
+};
+
+V.meds = function () {
+  var o = '<section class="panel"><h2>오늘 복약 확인</h2>' + medChecks() + '</section>';
+  o += '<section class="panel"><h2>내 약 목록</h2><form class="row" data-form="med">' +
+    field('약 이름', '<input type="text" id="md-name" name="name" maxlength="60" placeholder="처방전에 적힌 이름" required>') +
+    field('복용 시간', '<input type="text" id="md-time" name="time" maxlength="40" placeholder="예: 아침 식후" required>') + '<button class="btn">추가</button></form>' +
+    (S.meds.length ? '<ul class="log">' + S.meds.map(function (m) { return '<li><span class="t"><b>' + esc(m.name) + '</b> <span class="note">' + esc(m.time) + '</span></span>' + del('meds', m.id) + '</li>'; }).join('') + '</ul>' : empty('등록된 약이 없습니다.')) + '</section>';
+  var days = []; for (var i = 6; i >= 0; i--) days.push(ago(i));
+  if (S.meds.length) {
+    o += '<section class="panel"><h2>최근 7일 복약</h2><div class="tablewrap"><table><tr><th>날짜</th><th>복용</th><th>상태</th></tr>' + days.reverse().map(function (d) {
+      var n = (S.medChecks[d] || []).filter(function (id) { return S.meds.some(function (m) { return m.id === id; }); }).length;
+      return '<tr><td>' + d + '</td><td>' + n + ' / ' + S.meds.length + '</td><td>' + pill(n >= S.meds.length ? ['모두 복용','good'] : n ? ['일부 복용','warn'] : ['기록 없음','mute']) + '</td></tr>'; }).join('') + '</table></div></section>';
+  }
+  o += '<section class="panel info"><h3>복약 참고</h3><ul><li>수치가 좋아져도 약을 임의로 줄이거나 끊지 마세요. 용량 조절은 진료에서 결정합니다.</li><li>약을 빠뜨렸을 때 어떻게 할지는 약마다 다릅니다. 처방받은 약의 복약 안내문을 따르거나 약사에게 확인하세요.</li><li>고지혈증약(스타틴 계열) 복용 중 원인 모를 근육통, 힘 빠짐, 짙은 색 소변이 생기면 진료를 받으세요.</li><li>일부 스타틴은 자몽·자몽주스와 상호작용이 있습니다. 내 약이 해당하는지 약사에게 확인하세요.</li><li>다른 병원 진료나 건강기능식품 복용 전에 현재 먹는 약을 알리세요.</li></ul></section>';
+  return o;
+};
+
+V.info = function () {
+  return '<section class="alert info"><h3>저혈당 대처 (혈당 70 mg/dL 미만 또는 식은땀·떨림·심한 공복감·두근거림)</h3><ul><li>의식이 있으면 당분 15–20 g을 바로 섭취: 주스나 일반 탄산음료 반 컵(약 175 mL), 사탕 3–4개, 설탕·꿀 한 숟가락.</li><li>15분 뒤 혈당을 다시 재고 여전히 낮으면 한 번 더 섭취.</li><li>의식이 흐리면 음식을 먹이지 말고 119에 연락.</li></ul></section>' +
+  '<section class="panel info"><h2>당뇨병</h2><p>인슐린이 부족하거나 제대로 작용하지 않아 혈당이 높게 유지되는 병입니다. 높은 혈당이 오래 지속되면 눈(망막), 신장, 신경, 심장·뇌혈관에 합병증이 생길 수 있어 혈당·혈압·지질을 함께 관리합니다.</p>' +
+  '<div class="tablewrap"><table><tr><th>항목</th><th>일반 목표</th></tr><tr><td>당화혈색소</td><td>6.5% 미만 (제2형 당뇨병 성인, 개인별 조정)</td></tr><tr><td>공복 혈당</td><td>80–130 mg/dL</td></tr><tr><td>식후 2시간 혈당</td><td>180 mg/dL 미만</td></tr></table></div>' +
+  '<p class="note">출처: 대한당뇨병학회 당뇨병 진료지침. 나이, 저혈당 위험, 동반 질환에 따라 목표가 달라집니다.</p></section>' +
+  '<section class="panel info"><h2>고지혈증(이상지질혈증)</h2><p>혈액 속 LDL 콜레스테롤이나 중성지방이 높거나 HDL 콜레스테롤이 낮은 상태입니다. 증상이 거의 없지만 동맥경화를 일으켜 심근경색·뇌졸중 위험을 높입니다. 당뇨병이 있으면 위험이 더 커서 LDL 목표를 더 낮게 잡습니다.</p>' +
+  '<div class="tablewrap"><table><tr><th>항목</th><th>일반 목표·기준</th></tr><tr><td>LDL 콜레스테롤</td><td>당뇨병 환자 100 mg/dL 미만. 유병 기간 10년 이상이거나 주요 위험인자·표적장기 손상이 있으면 70 미만, 심혈관질환이 있으면 55 미만</td></tr><tr><td>중성지방</td><td>150 mg/dL 미만이 적정</td></tr><tr><td>HDL 콜레스테롤</td><td>40 mg/dL 미만이면 낮음</td></tr></table></div>' +
+  '<p class="note">출처: 한국지질·동맥경화학회 이상지질혈증 진료지침. 내 LDL 목표가 어느 단계인지는 주치의에게 확인하세요.</p></section>' +
+  '<section class="panel info"><h2>정기 점검</h2><ul><li>당화혈색소: 보통 2–3개월마다(주치의 판단에 따라 조정).</li><li>지질 검사, 신장 기능(혈액·소변 검사), 안저 검사, 발 검사: 보통 1년에 한 번 이상. 정확한 주기는 진료에서 정합니다.</li><li>혈압 관리와 금연도 합병증 예방에 중요합니다.</li></ul></section>' +
+  '<section class="panel info"><h2>바로 진료가 필요한 경우</h2><ul><li>혈당이 계속 매우 높으면서 심한 갈증, 잦은 소변, 구토, 복통, 의식 저하가 있을 때</li><li>가슴 통증, 한쪽 팔다리 마비, 말이 어눌해짐, 갑작스러운 시야 이상</li><li>저혈당이 반복되거나 스스로 대처하기 어려울 때</li><li>발에 낫지 않는 상처, 색 변화, 감각 저하</li></ul></section>' +
+  '<section class="panel info"><h2>참고 자료</h2><ul><li><a href="https://www.diabetes.or.kr" target="_blank" rel="noopener">대한당뇨병학회</a> (당뇨병 진료지침)</li><li><a href="https://www.lipid.or.kr" target="_blank" rel="noopener">한국지질·동맥경화학회</a> (이상지질혈증 진료지침)</li><li><a href="https://www.kosso.or.kr" target="_blank" rel="noopener">대한비만학회</a> (비만 진료지침)</li><li><a href="https://health.kdca.go.kr" target="_blank" rel="noopener">질병관리청 국가건강정보포털</a></li></ul><p class="note">이 앱의 내용은 일반적인 건강 정보이며 진단이나 처방을 대신하지 않습니다. 진료지침은 개정될 수 있으므로 최신 내용은 위 기관과 주치의에게 확인하세요.</p></section>';
+};
+
+V.data = function () {
+  var p = S.profile;
+  function v(x) { return x == null ? '' : x; }
+  return '<section class="panel"><h2>내 정보와 목표</h2><form class="row" data-form="profile">' +
+    field('키 (cm)', '<input type="number" id="p-h" name="height" step="0.1" min="100" max="230" inputmode="decimal" value="' + v(p.height) + '">') +
+    field('목표 체중 (kg)', '<input type="number" id="p-gw" name="goalWeight" step="0.1" min="20" max="300" inputmode="decimal" value="' + v(p.goalWeight) + '">') +
+    field('당화혈색소 목표 (%)', '<input type="number" id="p-a1c" name="a1cTarget" step="0.1" min="5" max="10" inputmode="decimal" value="' + v(p.a1cTarget) + '">') +
+    field('LDL 목표 (mg/dL)', '<input type="number" id="p-ldl" name="ldlTarget" min="30" max="200" inputmode="numeric" value="' + v(p.ldlTarget) + '">') + '<button class="btn">저장</button></form>' +
+    '<p class="note">당화혈색소·LDL 목표의 기본값은 진료지침의 일반 목표입니다. 주치의가 알려 준 값이 있으면 그 값으로 바꾸세요.</p></section>' +
+  '<section class="panel"><h2>백업과 복원</h2><p class="note">기록은 이 브라우저에만 저장되어, 브라우저 데이터를 지우거나 기기를 바꾸면 사라집니다. 아래 내용을 복사해 메모장 등에 보관해 두면 다시 붙여 넣어 복원할 수 있습니다.</p>' +
+    field('백업 내용', '<textarea id="backup" spellcheck="false">' + esc(JSON.stringify(S)) + '</textarea>', 'wide') +
+    '<div class="row" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" data-act="copy">백업 내용 복사</button><button class="btn ghost" data-act="restore">붙여 넣은 내용으로 복원</button>' +
+    '<button class="btn danger" data-act="reset">' + (resetArmed ? '한 번 더 누르면 모든 기록 삭제' : '모든 기록 삭제') + '</button></div>' +
+    (msg ? '<p class="note" role="status">' + esc(msg) + '</p>' : '') + '</section>';
+};
+
+function render() {
+  document.getElementById('nav').innerHTML = TABS.map(function (t) {
+    return '<button role="tab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + t[1] + '</button>'; }).join('');
+  var banner = S.example ? '<div class="banner"><span>지금 보이는 숫자는 사용법을 보여 주는 예시 데이터입니다.</span><button class="btn" data-act="clear-example">예시 지우고 내 기록 시작</button></div>' : '';
+  document.getElementById('main').innerHTML = banner + V[tab]();
+}
+
+var FORMS = {
+  weight: function (f) { var v = num(f.v); if (v == null) return;
+    S.weights = S.weights.filter(function (r) { return r.d !== f.d; }); S.weights.push({ id: uid(), d: f.d, v: v }); },
+  glucose: function (f) { var v = num(f.v); if (v == null) return; S.glucose.push({ id: uid(), d: f.d, type: f.type, v: Math.round(v) }); },
+  lab: function (f) { var r = { id: uid(), d: f.d, a1c: num(f.a1c), ldl: num(f.ldl), hdl: num(f.hdl), tg: num(f.tg) };
+    if (r.a1c == null && r.ldl == null && r.hdl == null && r.tg == null) return; S.labs.push(r); },
+  meal: function (f) { if (!f.text.trim()) return; S.meals.push({ id: uid(), d: f.d, type: f.type, text: f.text.trim() }); },
+  exercise: function (f) { var m = num(f.min); if (m == null || !f.type.trim()) return; S.exercise.push({ id: uid(), d: f.d, type: f.type.trim(), min: Math.round(m), inten: f.inten }); },
+  med: function (f) { if (!f.name.trim()) return; S.meds.push({ id: uid(), name: f.name.trim(), time: f.time.trim() }); },
+  profile: function (f) { S.profile = { height: num(f.height), goalWeight: num(f.goalWeight), a1cTarget: num(f.a1cTarget) || 6.5, ldlTarget: num(f.ldlTarget) || 100 }; msg = '저장했습니다.'; }
+};
+
+document.addEventListener('submit', function (e) {
+  var name = e.target.getAttribute('data-form'); if (!name) return;
+  e.preventDefault();
+  var f = {}; new FormData(e.target).forEach(function (v, k) { f[k] = v; });
+  FORMS[name](f); save(); render();
+});
+document.addEventListener('change', function (e) {
+  var list = e.target.getAttribute && e.target.getAttribute('data-check'); if (!list) return;
+  var id = e.target.getAttribute('data-id'), d = today(), arr = (S[list][d] || []).filter(function (x) { return x !== id; });
+  if (e.target.checked) arr.push(id);
+  S[list][d] = arr; save(); render();
+});
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (!b) return;
+  if (b.hasAttribute('data-tab')) { tab = b.getAttribute('data-tab'); resetArmed = false; msg = ''; render(); window.scrollTo(0, 0); return; }
+  var act = b.getAttribute('data-act'); if (!act) return;
+  if (act !== 'reset') resetArmed = false;
+  if (act === 'del') { var l = b.getAttribute('data-list'), id = b.getAttribute('data-id'); S[l] = S[l].filter(function (r) { return r.id !== id; }); }
+  else if (act === 'clear-example') { S = blank(); }
+  else if (act === 'reset') { if (resetArmed) { S = blank(); resetArmed = false; msg = '모든 기록을 삭제했습니다.'; } else { resetArmed = true; } }
+  else if (act === 'copy') { var ta = document.getElementById('backup'); ta.select();
+    try { navigator.clipboard.writeText(ta.value).then(function () { msg = '복사했습니다.'; render(); }, function () { msg = '자동 복사가 막혀 있습니다. 선택된 내용을 직접 복사하세요.'; render(); }); } catch (err) { msg = '선택된 내용을 직접 복사하세요.'; }
+    return; }
+  else if (act === 'restore') {
+    try { var o = JSON.parse(document.getElementById('backup').value); if (!o || !Array.isArray(o.weights)) throw 0;
+      S = Object.assign(blank(), o); S.profile = Object.assign(blank().profile, o.profile); msg = '복원했습니다.'; }
+    catch (err) { msg = '복원하지 못했습니다. 백업 내용 전체를 그대로 붙여 넣었는지 확인하세요.'; render(); return; }
+  }
+  save(); render();
+});
+
+load(); render();
+})();
+</script>
